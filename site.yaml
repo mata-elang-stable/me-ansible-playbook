@@ -1,0 +1,16 @@
+---
+- name: Install Mata Elang Platform
+  host: all
+  vars_files:
+    - defaults/main.yml
+  pre_tasks:
+    - name: Set Timezone to local
+      timezone:
+        name: Asia/Jakarta
+    - name: Upgrade Ubuntu packages
+      apt:
+        update_cache: yes
+        name: "*"
+        state: latest
+  tasks:
+

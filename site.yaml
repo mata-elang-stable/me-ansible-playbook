@@ -18,3 +18,7 @@
       include_role:
         name: snort_sensor
       when: inventory_hostname in groups['sensor']
+    - name: kafka installation
+      include_role:
+        name: kafka_docker
+      when: inventory_hostname in groups['kafka']

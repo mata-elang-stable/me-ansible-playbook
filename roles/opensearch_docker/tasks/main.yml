@@ -1,0 +1,24 @@
+---
+# tasks file for dashboard
+- name: Ensure OpenSearch directory exists
+  file:
+    path: "~/opensearch"
+    state: directory
+    mode: 0775
+
+- name: Configure docker-compose environment
+  ansible.builtin.template: 
+    src: docker-compose.yaml.j2
+    dest: "~/opensearch/docker-compose.yaml"
+    mode: 0755
+
+- name: Configure Pipeline config file
+  ansible.builtin.template:
+    src: pipeline.conf.j2
+    dest: "~/opensearch/pipeline.conf"
+
+- name: deploy Docker Compose stack
+  community.docker.docker_compose:
+    project_src: "~/opensearch"
+    files:
+    - docker-compose.yaml

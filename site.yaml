@@ -14,11 +14,15 @@
         name: "*"
         state: latest
   tasks:
-    - name: sensor installation
+    - name: Snort Sensor Installation
       include_role:
         name: snort_sensor
       when: inventory_hostname in groups['sensor']
-    - name: kafka installation
+    - name: Kafka installation
       include_role:
         name: kafka_docker
       when: inventory_hostname in groups['kafka']
+    - name: OpenSearch installation
+      include_role:
+        name: opensearch_docker
+      when: inventory_hostname in groups['opensearch']

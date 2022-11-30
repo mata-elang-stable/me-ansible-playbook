@@ -1,6 +1,6 @@
 ---
 - name: Install Mata Elang Platform
-  host: all
+  hosts: all
   vars_files:
     - defaults/main.yml
   pre_tasks:
@@ -8,9 +8,13 @@
       timezone:
         name: Asia/Jakarta
     - name: Upgrade Ubuntu packages
+      become: yes
       apt:
         update_cache: yes
         name: "*"
         state: latest
   tasks:
-
+    - name: sensor installation
+      include_role:
+        name: snort_sensor
+      when: inventory_hostname in groups['sensor']

@@ -1,2 +1,45 @@
 ---
-# tasks file for snort_sensor
+# tasks file for sensor-role
+- name: Ensure Sensor directory exists
+  file:
+    path: "~/sensor"
+    state: directory
+    mode: 0775
+
+- name: Configure docker-compose environment
+  ansible.builtin.template: 
+    src: docker-compose.yml.j2
+    dest: "~/sensor/docker-compose.yml"
+    mode: 0755
+
+- name: Ensure Snort directory exists
+  file:
+    path: "~/sensor/snort"
+    state: directory
+    mode: 0775
+
+- name: Configure Dockerfile environment
+  ansible.builtin.template:
+    src: "./snort/Dockerfile.j2"
+    dest: "~/sensor/snort/Dockerfile"
+
+- name: Configure pulledpork config file
+  ansible.builtin.template:
+    src: "./snort/pulledpork.conf.j2"
+    dest: "~/sensor/snort/pulledpork.conf"
+
+- name: Configure snort.lua config file
+  ansible.builtin.template:
+    src: "./snort/snort.lua.j2"
+    dest: "~/sensor/snort/snort.lua"
+
+- name: Configure start shell config file
+  ansible.builtin.template:
+    src: ./snort/start.sh.j2
+    dest: "~/sensor/snort/start.sh"
+
+- name: deploy Docker Compose stack
+  community.docker.docker_compose:
+    project_src: "~/sensor"
+    files:
+    - docker-compose.yml

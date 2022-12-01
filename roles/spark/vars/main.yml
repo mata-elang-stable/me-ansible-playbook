@@ -1,0 +1,3 @@
+---
+spark_directory_name: spark-{{ spark_version }}-bin-hadoop{{ spark_hadoop_version }}
+spark_archive_filename: "{{ spark_directory_name }}.tgz"

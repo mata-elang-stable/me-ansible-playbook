@@ -1,0 +1,18 @@
+---
+- name: Example use of this role
+  hosts: all
+  become: yes
+  tasks:
+    - name: "Include mata_elang_stable.ansible_role_spark"
+      include_role:
+        name: "mata_elang_stable.ansible_role_spark"
+
+    - name: "[DEBUG] Who is master?"
+      ansible.builtin.debug:
+        msg: "Hello"
+      when: inventory_hostname in groups['spark-master']
+
+    - name: "[DEBUG] Who is worker?"
+      ansible.builtin.debug:
+        msg: "Hello"
+      when: inventory_hostname in groups['spark-worker']

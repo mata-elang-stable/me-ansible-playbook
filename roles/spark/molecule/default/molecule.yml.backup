@@ -1,0 +1,14 @@
+# code: language=yaml
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+platforms:
+  - name: ubuntu20.04
+    image: geerlingguy/docker-ubuntu2004-ansible
+    pre_build_image: true
+provisioner:
+  name: ansible
+verifier:
+  name: ansible

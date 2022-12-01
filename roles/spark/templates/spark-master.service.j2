@@ -1,0 +1,17 @@
+[Unit]
+Description=Apache Spark Master
+After=network.target
+
+[Service]
+Type=forking
+User=spark
+Group=spark
+EnvironmentFile={{ spark_usr_dir }}/conf/spark-env.sh
+WorkingDirectory={{ spark_usr_dir }}
+ExecStart={{ spark_usr_dir }}/sbin/start-master.sh
+ExecStop={{ spark_usr_dir }}/sbin/stop-master.sh
+Restart=on-failure
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target

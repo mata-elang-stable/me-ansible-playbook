@@ -1,2 +1,14 @@
 [sensor]
 192.168.56.104 ansible_ssh_user=<your_username> ansible_ssh_password=<your_password> ansible_become_password=<your_become_password>
+
+[spark]
+192.168.56.202
+192.168.56.203
+192.168.56.204
+
+[spark-master]
+192.168.56.202
+
+[spark-worker]
+192.168.56.203
+192.168.56.204

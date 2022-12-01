@@ -1,41 +1,5 @@
 ---
-# defaults file for mata-elang-ansible
-me_sensor_snort_parser_image: mfscy/snort3-parser:latest
-sensor_network_interface: enp0s8
-sensor_oinkcode: cb17635c13de4bee0c57f932610aa3a2eea29b2b
-sensor_home_net: 192.168.56.0/24
-sensor_mqtt_host: 192.168.56.1
-sensor_mqtt_username: ""
-sensor_mqtt_password: ""
-
-#kafka
-#control-center
-kafka_cluster_name: MataElangKafkaCluster
-kafka_cluster_bootstrap_server: kafka:9092
-kafka_cluster_zookeeper: zookeeper:2181
-
-#kafka
-kafka_config_zookeper: zookeeper:2181
-config_plaintext_listener: yes
-kafka_config_log_dirs: /tmp/kafka_mounts/logs
-kafka_config_advertised_listeners: CLIENT://kafka:9092,EXTERNAL://172.17.0.1:9093
-kafka_config_listeners: CLIENT://:9092,EXTERNAL://0.0.0.0:9093
-kafka_config_security_proto: CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
-kafka_config_broker_listener: CLIENT
-
-#mqtt-source
-mqtt_host: 172.17.0.1
-mqtt_port: 1883
-mqtt_username: ""
-mqtt_password: ""
-mqtt_topic: mataelang/sensor/v3/+
-kafka_bootstrap_servers: kafka:9092
-kafka_topic: sensor_events
-
-# zookeeper
-anonymous_login: yes
-
-# spark
+# defaults file for ansible-role-spark
 debug_mode: false
 spark_version: "3.3.1"
 spark_hadoop_version: "3"

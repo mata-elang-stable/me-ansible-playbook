@@ -1,7 +1,0 @@
----
-- name: Converge
-  hosts: all
-  tasks:
-    - name: "Include me.spark"
-      include_role:
-        name: "me.spark"

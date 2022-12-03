@@ -1,9 +1,23 @@
 version: '3'
 
+volumes:
+  mosquitto_data:
+
 services:
+  mosquitto:
+    image: eclipse-mosquitto
+    restart: on-failure
+    volumes:
+      - ./conf/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto_data:/mosquitto/data
+    ports:
+      - 1883:1883
+      - 9001:9001
+
   mqtt-source:
     image: mfscy/kafka-mqtt-source
     container_name: mqtt-source
+    restart: on-failure
     env_file:
       - conf/mqtt-source.env
     deploy:

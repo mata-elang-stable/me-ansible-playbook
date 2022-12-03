@@ -1,2 +1,4 @@
 ---
 # defaults file for hadoop
+hadoop_version: "3.3.4"
+

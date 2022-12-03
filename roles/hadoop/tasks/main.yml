@@ -1,0 +1,45 @@
+---
+# tasks file for hadoop
+- name: Create service account for Apache Hadoop
+  ansible.builtin.user:
+    name: "hadoop"
+    home: "/home/hadoop"
+    shell: "/bin/nologin"
+    state: present
+
+- name: Copy JDK Archive
+  ansible.builtin.copy:
+    src: "files/{{ jdk_archive_filename }}"
+    dest: "/tmp/"
+    mode: 0644
+
+- name: Ensure jdk directory exists
+  ansible.builtin.file:
+    path: "{{ item }}"
+    mode: 0755
+    state: directory
+  with_items:
+    - "~/.jdk"
+    - "~/.hadoop"
+
+- name: Extract JDK distribution
+  ansible.builtin.unarchive:
+    src: "/tmp/{{ jdk_archive_filename }}"
+    dest: "~/.jdk"
+    copy: no
+    owner: "hadoop"
+    group: "hadoop"
+
+- name: Copy Hadoop Archive
+  ansible.builtin.copy:
+    src: "files/{{ hadoop_archive_filename }}"
+    dest: "/tmp/"
+    mode: 0644
+
+- name: Extract Hadoop distribution
+  ansible.builtin.unarchive:
+    src: "/tmp/{{ hadoop_archive_filename }}"
+    dest: "~/.hadoop"
+    copy: no
+    owner: "hadoop"
+    group: "hadoop"

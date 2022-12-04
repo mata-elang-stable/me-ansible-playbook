@@ -1,5 +1,10 @@
 ---
 # tasks file for hadoop
+- name: Define haddop_listen_ip
+  ansible.builtin.set_fact:
+    haddop_listen_ip: "{{ __haddop_listen_ip }}"
+  when: haddop_listen_ip is not defined
+
 - name: Create service account for Apache Hadoop
   ansible.builtin.user:
     name: "hadoop"
@@ -18,15 +23,17 @@
     path: "{{ item }}"
     mode: 0755
     state: directory
+    owner: "hadoop"
+    group: "hadoop"
   with_items:
-    - "~/.jdk"
-    - "~/.hadoop"
+    - "/opt/jdk"
+    - "/opt/hadoop"
 
 - name: Extract JDK distribution
   ansible.builtin.unarchive:
     src: "/tmp/{{ jdk_archive_filename }}"
-    dest: "~/.jdk"
-    copy: no
+    dest: "/opt/jdk"
+    copy: false
     owner: "hadoop"
     group: "hadoop"
 
@@ -39,7 +46,60 @@
 - name: Extract Hadoop distribution
   ansible.builtin.unarchive:
     src: "/tmp/{{ hadoop_archive_filename }}"
-    dest: "~/.hadoop"
-    copy: no
+    dest: "/opt/hadoop"
+    copy: false
     owner: "hadoop"
     group: "hadoop"
+
+- name: Configure hadoop-env.sh file
+  ansible.builtin.template:
+    src: "./hadoop-env.sh.j2"
+    dest: "/opt/hadoop/etc/hadoop/hadoop-env.sh"
+    mode: 0755
+
+- name: Configure core-site.xml file
+  ansible.builtin.template:
+    src: "./core-site.xml.j2"
+    dest: "/opt/hadoop/etc/hadoop/core-site.xml"
+    mode: 0755
+
+- name: Configure hdfs-site.xml file
+  ansible.builtin.template:
+    src: "./hdfs-site.xml.j2"
+    dest: "/opt/hadoop/etc/hadoop/hdfs-site.xml"
+    mode: 0755
+
+- name: Stop Hadoop service
+  ansible.builtin.shell:
+    cmd: /opt/hadoop/sbin/stop-dfs.sh
+
+- name: Format a Hadoop Namenode
+  ansible.builtin.shell:
+    cmd: /opt/hadoop/bin/hdfs namenode -format
+
+- name: Start Hadoop service
+  ansible.builtin.shell:
+    cmd: /opt/hadoop/sbin/start-dfs.sh
+
+- name: Copy Kaspacore related file to machine
+  ansible.builtin.copy:
+    src: "files/{{ item }}"
+    dest: "/tmp/"
+    mode: 0644
+  with_items:
+    - "kaspacore.jar"
+    - "GeoLite2-City.mmdb"
+
+- name: Create Hadoop needed directory
+  ansible.builtin.shell:
+    cmd: "{{ item }}"
+  with_items:
+    - "/opt/hadoop/bin/hdfs dfs -mkdir -p hdfs://localhost:9000/user/hadoop/kaspa-checkpoint"
+    - "/opt/hadoop/bin/hdfs dfs -mkdir -p hdfs://localhost:9000/user/hadoop/file/maxmind"
+
+- name: Upload GeoLite2-City Maxmind Geo Database
+  ansible.builtin.shell:
+    cmd: "{{ item }}"
+  with_items:
+    - "/opt/hadoop/bin/hdfs dfs -put /tmp/GeoLite2-City.mmdb /user/hadoop/file/maxmind"
+    - "/opt/hadoop/bin/hdfs dfs -put /tmp/kaspacore.jar /user/hadoop/file"

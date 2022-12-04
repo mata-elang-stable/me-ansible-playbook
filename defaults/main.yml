@@ -37,3 +37,6 @@ kafka_topic: sensor_events
 
 # zookeeper
 anonymous_login: yes
+
+# hadoop
+hadoop_listen_ip: "{{ groups['hadoop'][0] }}"

@@ -66,7 +66,7 @@
     src: ./snort/start.sh.j2
     dest: "~/sensor/snort/start.sh"
 
-- name: deploy Docker Compose stack
+- name: Deploy Docker Compose stack
   community.docker.docker_compose:
     project_src: "~/sensor"
     build: true

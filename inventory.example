@@ -6,6 +6,9 @@ ansible_become_password=password
 [sensor]
 192.168.56.11 sensor_network_interface=enp0s8
 
+[hadoop]
+192.168.56.101
+
 [kafka]
 192.168.56.101
 

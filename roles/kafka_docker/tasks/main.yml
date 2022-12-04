@@ -22,7 +22,7 @@
     - "bitnami_zookeeper.tar"
     - "mfscy_kafka-mqtt-source.tar"
     - "provectuslabs_kafka-ui.tar"
-    - "eclipse-mosquitto.tar"
+    - "eclipse-mosquitto_2.tar"
 
 - name: Load docker image
   ansible.builtin.shell: docker load -i {{ item }}
@@ -33,7 +33,7 @@
     - "bitnami_zookeeper.tar"
     - "mfscy_kafka-mqtt-source.tar"
     - "provectuslabs_kafka-ui.tar"
-    - "eclipse-mosquitto.tar"
+    - "eclipse-mosquitto_2.tar"
 
 - name: Configure docker-compose environment
   ansible.builtin.template: 

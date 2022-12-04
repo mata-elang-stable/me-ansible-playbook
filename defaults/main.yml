@@ -11,13 +11,13 @@ sensor_mqtt_password: ""
 snort_local_rules:
   - 'alert icmp any any -> any any (msg:"ICMP test detected"; gid:1; sid:10000001; rev:001; classtype:icmp-event;)'
 
-#kafka
-#control-center
+# kafka
+# control-center
 kafka_cluster_name: MataElangKafkaCluster
 kafka_cluster_bootstrap_server: kafka:9092
 kafka_cluster_zookeeper: zookeeper:2181
 
-#kafka
+# kafka
 kafka_config_zookeper: zookeeper:2181
 config_plaintext_listener: yes
 kafka_config_log_dirs: /tmp/kafka_mounts/logs
@@ -26,7 +26,7 @@ kafka_config_listeners: CLIENT://:9092,EXTERNAL://0.0.0.0:9093
 kafka_config_security_proto: CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
 kafka_config_broker_listener: CLIENT
 
-#mqtt-source
+# mqtt-source
 mqtt_host: mosquitto
 mqtt_port: 1883
 mqtt_username: ""
@@ -40,3 +40,5 @@ anonymous_login: yes
 
 # hadoop
 hadoop_listen_ip: "{{ groups['hadoop'][0] }}"
+hadoop_archive_filename: hadoop-3.3.4.tar.gz
+jdk_archive_filename: amazon-corretto-11-x64-linux-jdk.tar.gz

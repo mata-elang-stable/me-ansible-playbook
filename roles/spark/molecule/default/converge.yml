@@ -1,7 +1,0 @@
----
-- name: Converge
-  hosts: all
-  tasks:
-    - name: "Include mata_elang_stable.ansible_role_spark"
-      include_role:
-        name: "mata_elang_stable.ansible_role_spark"

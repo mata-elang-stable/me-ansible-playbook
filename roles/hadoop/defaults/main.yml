@@ -1,0 +1,6 @@
+---
+# defaults file for hadoop
+hadoop_version: "3.3.4"
+# haddop_listen_ip: "127.0.0.1"
+hadoop_archive_filename: hadoop-3.3.4.tar.gz
+jdk_archive_filename: amazon-corretto-11-x64-linux-jdk.tar.gz

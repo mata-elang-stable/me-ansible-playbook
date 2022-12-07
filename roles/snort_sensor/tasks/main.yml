@@ -6,6 +6,29 @@
     state: directory
     mode: 0775
 
+- name: Ensure Sensor docker image dir exists
+  file:
+    path: "~/sensor/docker_image"
+    state: directory
+    mode: 0775
+
+- name: Copy docker image kafka related files to machine
+  ansible.builtin.copy:
+    src: "files/docker_images/{{ item }}"
+    dest: "~/sensor/docker_image/"
+    mode: 0644
+  with_items:
+    - "mfscy_snort3-parser.tar"
+    - "mfscy_snort-base_3.tar"
+
+- name: Load docker image
+  ansible.builtin.shell: docker load -i {{ item }}
+  args:
+    chdir: ~/sensor/docker_image
+  with_items:
+    - "mfscy_snort3-parser.tar"
+    - "mfscy_snort-base_3.tar"
+
 - name: Configure docker-compose environment
   ansible.builtin.template: 
     src: docker-compose.yml.j2
@@ -33,13 +56,20 @@
     src: "./snort/snort.lua.j2"
     dest: "~/sensor/snort/snort.lua"
 
+- name: Configure local.rules config file
+  ansible.builtin.template:
+    src: "./snort/local.rules.j2"
+    dest: "~/sensor/snort/local.rules"
+
 - name: Configure start shell config file
   ansible.builtin.template:
     src: ./snort/start.sh.j2
     dest: "~/sensor/snort/start.sh"
 
-- name: deploy Docker Compose stack
+- name: Deploy Docker Compose stack
   community.docker.docker_compose:
     project_src: "~/sensor"
+    build: true
+    remove_orphans: true
     files:
     - docker-compose.yml

@@ -6,7 +6,7 @@ services:
     network_mode: host
     restart: always
     environment:
-      - NETWORK_INTERFACE="{{sensor_network_interface}}"
+      - NETWORK_INTERFACE={{sensor_network_interface}}
     volumes:
       - ./snort/snort.lua:/usr/local/etc/snort/snort.lua:ro
       - snort_data:/var/log/snort:rw

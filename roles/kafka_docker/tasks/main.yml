@@ -6,6 +6,35 @@
     state: directory
     mode: 0775
 
+- name: Ensure Kafka docker image dir exists
+  file:
+    path: "~/kafka/docker_image"
+    state: directory
+    mode: 0775
+
+- name: Copy docker image kafka related files to machine
+  ansible.builtin.copy:
+    src: "files/docker_images/{{ item }}"
+    dest: "~/kafka/docker_image/"
+    mode: 0644
+  with_items:
+    - "bitnami_kafka.tar"
+    - "bitnami_zookeeper.tar"
+    - "mfscy_kafka-mqtt-source.tar"
+    - "provectuslabs_kafka-ui.tar"
+    - "eclipse-mosquitto_2.tar"
+
+- name: Load docker image
+  ansible.builtin.shell: docker load -i {{ item }}
+  args:
+    chdir: ~/kafka/docker_image
+  with_items:
+    - "bitnami_kafka.tar"
+    - "bitnami_zookeeper.tar"
+    - "mfscy_kafka-mqtt-source.tar"
+    - "provectuslabs_kafka-ui.tar"
+    - "eclipse-mosquitto_2.tar"
+
 - name: Configure docker-compose environment
   ansible.builtin.template: 
     src: docker-compose.yml.j2
@@ -17,6 +46,12 @@
     path: "~/kafka/conf"
     state: directory
     mode: 0775
+
+- name: Configure mosquitto environment
+  ansible.builtin.template:
+    src: conf/mosquitto.conf.j2
+    dest: "~/kafka/conf/mosquitto.conf"
+    mode: 0755
 
 - name: Configure control-center environment
   ansible.builtin.template: 
@@ -42,8 +77,12 @@
     dest: "~/kafka/conf/zookeeper.env"
     mode: 0755
 
-- name: deploy Docker Compose stack
-  community.docker.docker_compose:
-    project_src: "~/kafka"
-    files:
-    - docker-compose.yml
+- name: Down compose service
+  ansible.builtin.shell: docker compose down -v
+  args:
+    chdir: ~/kafka
+
+- name: Down compose service
+  ansible.builtin.shell: docker compose up -d
+  args:
+    chdir: ~/kafka

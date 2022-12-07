@@ -5,24 +5,31 @@
     - defaults/main.yml
   pre_tasks:
     - name: Set Timezone to local
+      become: true
       timezone:
         name: Asia/Jakarta
-    - name: Upgrade Ubuntu packages
-      become: yes
-      apt:
-        update_cache: yes
-        name: "*"
-        state: latest
   tasks:
-    - name: Snort Sensor Installation
+    # - name: Run Kafka installation
+    #   include_role:
+    #     name: kafka_docker
+    #   when: inventory_hostname in groups['kafka']
+
+    # - name: Run Snort Sensor Installation
+    #   include_role:
+    #     name: snort_sensor
+    #   when: inventory_hostname in groups['sensor']
+
+    - name: Run Hadoop Installation
       include_role:
-        name: snort_sensor
-      when: inventory_hostname in groups['sensor']
-    - name: Kafka installation
+        name: hadoop
+      when: inventory_hostname in groups['hadoop']
+
+    - name: Run Spark Installation
       include_role:
-        name: kafka_docker
-      when: inventory_hostname in groups['kafka']
-    - name: OpenSearch installation
+        name: spark_docker
+      when: inventory_hostname in groups['spark']
+
+    - name: Run Opensearch Installation
       include_role:
         name: opensearch_docker
       when: inventory_hostname in groups['opensearch']

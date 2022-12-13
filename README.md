@@ -8,11 +8,11 @@
 
 All mata elang components are already included inside `roles` folder that described below:
 
-- `hadoop_docker` folder contain the automation folder for implementing the hadoop mata-elang component.
-- `kafka_docker` 
-- `opensearch_docker`
-- `snort_sensor`
-- `spark`
+- `hadoop` folder contain the automation folder for implementing the Mata Elang Hadoop component.
+- `kafka_docker` folder contain the automation folder for implementing the Mata Elang Kafka component.
+- `opensearch_docker` folder contain the automation folder for implementing the Mata Elang  OpenSearch component.
+- `snort_sensor` folder contain the automation folder for implementing the Mata Elang Sensor Snort component.
+- `spark_docker` folder contain the automation folder for implementing the Mata Elang Spark and Kaspacore component.
 
 ## Usage
 

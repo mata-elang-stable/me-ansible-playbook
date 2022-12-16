@@ -145,6 +145,7 @@
   with_items:
     - "/opt/hadoop/bin/hdfs dfs -mkdir -p hdfs://localhost:9000/user/hadoop/kaspa-checkpoint"
     - "/opt/hadoop/bin/hdfs dfs -mkdir -p hdfs://localhost:9000/user/hadoop/file/maxmind"
+    - "/opt/hadoop/bin/hdfs dfs -mkdir -p hdfs://localhost:9000/user/hadoop/spark/spark-events"
 
 - name: Upload GeoLite2-City Maxmind Geo Database
   become: true

@@ -1,6 +1,6 @@
 ---
 # defaults file for sensor-role
-me_sensor_snort_parser_image: mfscy/snort3-parser:latest
+me_sensor_snort_parser_image: mataelang/snort3-parser:latest
 sensor_network_interface: enp0s8
 sensor_oinkcode: cb17635c13de4bee0c57f932610aa3a2eea29b2b
 sensor_home_net: 192.168.56.0/24

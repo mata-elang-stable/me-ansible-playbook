@@ -15,7 +15,7 @@ services:
       - 9001:9001
 
   mqtt-source:
-    image: mfscy/kafka-mqtt-source
+    image: mataelang/kafka-mqtt-source
     container_name: mqtt-source
     restart: on-failure
     env_file:

@@ -18,16 +18,16 @@
     dest: "~/sensor/docker_image/"
     mode: 0644
   with_items:
-    - "mfscy_snort3-parser.tar"
-    - "mfscy_snort-base_3.tar"
+    - "mataelang_snort3-parser.tar"
+    - "mataelang_snort-base_3.tar"
 
 - name: Load docker image
   ansible.builtin.shell: docker load -i {{ item }}
   args:
     chdir: ~/sensor/docker_image
   with_items:
-    - "mfscy_snort3-parser.tar"
-    - "mfscy_snort-base_3.tar"
+    - "mataelang_snort3-parser.tar"
+    - "mataelang_snort-base_3.tar"
 
 - name: Configure docker-compose environment
   ansible.builtin.template: 

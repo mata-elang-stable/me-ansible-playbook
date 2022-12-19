@@ -18,14 +18,14 @@
     dest: "~/spark/docker_image/"
     mode: 0644
   with_items:
-    - "mfscy_spark_3.3.1-scala2.13.tar"
+    - "mataelang_spark_3.3.1-scala2.13.tar"
 
 - name: Load docker image
   ansible.builtin.shell: docker load -i {{ item }}
   args:
     chdir: ~/spark/docker_image
   with_items:
-    - "mfscy_spark_3.3.1-scala2.13.tar"
+    - "mataelang_spark_3.3.1-scala2.13.tar"
 
 - name: Configure docker-compose environment
   ansible.builtin.template: 

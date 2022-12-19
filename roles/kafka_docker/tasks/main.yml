@@ -20,7 +20,7 @@
   with_items:
     - "bitnami_kafka.tar"
     - "bitnami_zookeeper.tar"
-    - "mfscy_kafka-mqtt-source.tar"
+    - "mataelang_kafka-mqtt-source.tar"
     - "provectuslabs_kafka-ui.tar"
     - "eclipse-mosquitto_2.tar"
 
@@ -31,7 +31,7 @@
   with_items:
     - "bitnami_kafka.tar"
     - "bitnami_zookeeper.tar"
-    - "mfscy_kafka-mqtt-source.tar"
+    - "mataelang_kafka-mqtt-source.tar"
     - "provectuslabs_kafka-ui.tar"
     - "eclipse-mosquitto_2.tar"
 

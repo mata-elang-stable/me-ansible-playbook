@@ -9,15 +9,15 @@
       timezone:
         name: Asia/Jakarta
   tasks:
-    # - name: Run Kafka installation
-    #   include_role:
-    #     name: kafka_docker
-    #   when: inventory_hostname in groups['kafka']
+    - name: Run Kafka installation
+      include_role:
+        name: kafka_docker
+      when: inventory_hostname in groups['kafka']
 
-    # - name: Run Snort Sensor Installation
-    #   include_role:
-    #     name: snort_sensor
-    #   when: inventory_hostname in groups['sensor']
+    - name: Run Snort Sensor Installation
+      include_role:
+        name: snort_sensor
+      when: inventory_hostname in groups['sensor']
 
     - name: Run Hadoop Installation
       include_role:

@@ -2,16 +2,22 @@
 # defaults file for mata-elang-ansible
 me_sensor_snort_parser_image: mataelang/snort3-parser:latest
 sensor_network_interface: enp0s8
-sensor_oinkcode: cb17635c13de4bee0c57f932610aa3a2eea29b2b
+sensor_oinkcode: xxxxxxx
 sensor_home_net: 192.168.56.0/24
 sensor_mqtt_host: 192.168.56.101
 sensor_mqtt_username: ""
 sensor_mqtt_password: ""
+timezone: Asia/Jakarta
 
+# docker
+docker_archive_filename: docker-20.10.9.tgz
+hadoop_archive_filename: hadoop-3.3.4.tar.gz
+jdk_archive_filename: amazon-corretto-11-x64-linux-jdk.tar.gz
+
+# sensor
 snort_local_rules:
   - 'alert icmp any any -> any any (msg:"ICMP test detected"; gid:1; sid:10000001; rev:001; classtype:icmp-event;)'
 
-# kafka
 # control-center
 kafka_cluster_name: MataElangKafkaCluster
 kafka_cluster_bootstrap_server: kafka:9092
@@ -19,7 +25,7 @@ kafka_cluster_zookeeper: zookeeper:2181
 
 # kafka
 kafka_config_zookeper: zookeeper:2181
-config_plaintext_listener: yes
+config_plaintext_listener: true
 kafka_config_log_dirs: /tmp/kafka_mounts/logs
 kafka_config_advertised_listeners: CLIENT://kafka:9092,EXTERNAL://172.17.0.1:9093
 kafka_config_listeners: CLIENT://:9092,EXTERNAL://0.0.0.0:9093
@@ -36,9 +42,8 @@ kafka_bootstrap_servers: kafka:9092
 kafka_topic: sensor_events
 
 # zookeeper
-anonymous_login: yes
+anonymous_login: true
 
 # hadoop
 hadoop_listen_ip: "{{ groups['hadoop'][0] }}"
-hadoop_archive_filename: hadoop-3.3.4.tar.gz
-jdk_archive_filename: amazon-corretto-11-x64-linux-jdk.tar.gz
+hadoop_user_name: hadoop

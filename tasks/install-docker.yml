@@ -29,6 +29,20 @@
     group: root
     mode: 0755
 
+- name: Ensure Docker directory exists
+  become: true
+  ansible.builtin.file:
+    path: "/usr/local/lib/docker/cli-plugins"
+    mode: 0700
+    state: directory
+
+- name: Install Docker Compose plugin
+  become: true
+  ansible.builtin.copy:
+    src: "files/{{ docker_compose_plugin_archive_filename }}"
+    dest: "/usr/local/lib/docker/cli-plugins/docker-compose"
+    mode: 0755
+
 - name: Restart service cron also issue daemon-reload to pick up config changes
   become: true
   ansible.builtin.systemd:

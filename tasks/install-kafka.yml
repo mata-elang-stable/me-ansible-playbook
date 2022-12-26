@@ -1,0 +1,91 @@
+---
+- name: Ensure Kafka directory exists
+  become: true
+  file:
+    path: "~/kafka"
+    state: directory
+    mode: 0775
+
+- name: Ensure Kafka docker image dir exists
+  become: true
+  file:
+    path: "~/kafka/docker_image"
+    state: directory
+    mode: 0775
+
+- name: Copy docker image kafka related files to machine
+  become: true
+  ansible.builtin.copy:
+    src: "files/docker_images/{{ item }}"
+    dest: "~/kafka/docker_image/"
+    mode: 0644
+  with_items:
+    - "confluentinc_cp-kafka.tar"
+    - "confluentinc_cp-zookeeper.tar"
+    - "mataelang_kafka-mqtt-source.tar"
+    - "provectuslabs_kafka-ui.tar"
+    - "eclipse-mosquitto_2.tar"
+
+- name: Load docker image
+  ansible.builtin.shell: docker load -i {{ item }}
+  become: true
+  args:
+    chdir: ~/kafka/docker_image
+  with_items:
+    - "confluentinc_cp-kafka.tar"
+    - "confluentinc_cp-zookeeper.tar"
+    - "mataelang_kafka-mqtt-source.tar"
+    - "provectuslabs_kafka-ui.tar"
+    - "eclipse-mosquitto_2.tar"
+
+- name: Configure docker-compose environment
+  ansible.builtin.template: 
+    src: ./kafka/docker-compose.yml.j2
+    dest: "~/kafka/docker-compose.yml"
+    mode: 0755
+
+- name: Ensure Conf directory exists
+  file:
+    path: "~/kafka/conf"
+    state: directory
+    mode: 0775
+
+- name: Configure mosquitto environment
+  ansible.builtin.template:
+    src: ./kafka/conf/mosquitto.conf.j2
+    dest: "~/kafka/conf/mosquitto.conf"
+    mode: 0755
+
+- name: Configure control-center environment
+  ansible.builtin.template: 
+    src: ./kafka/conf/control-center.env.j2
+    dest: "~/kafka/conf/control-center.env"
+    mode: 0755
+
+- name: Configure Kafka environment
+  ansible.builtin.template: 
+    src: ./kafka/conf/kafka.env.j2
+    dest: "~/kafka/conf/kafka.env"
+    mode: 0755
+
+- name: Configure MQTT Connect environment
+  ansible.builtin.template: 
+    src: ./kafka/conf/mqtt-source.env.j2
+    dest: "~/kafka/conf/mqtt-source.env"
+    mode: 0755
+
+- name: Configure Zookeper environment
+  ansible.builtin.template: 
+    src: ./kafka/conf/zookeeper.env.j2
+    dest: "~/kafka/conf/zookeeper.env"
+    mode: 0755
+
+- name: Down compose service
+  ansible.builtin.shell: docker compose down -v
+  args:
+    chdir: ~/kafka
+
+- name: Up compose service
+  ansible.builtin.shell: docker compose up --detach
+  args:
+    chdir: ~/kafka

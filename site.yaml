@@ -9,35 +9,26 @@
       timezone:
         name: "{{ timezone }}"
   tasks:
-    - name: Instal Mata Elang Comp. All-In-One
+    - name: Install Docker Binary
       ansible.builtin.import_tasks:
-        file: tasks/main.yml
+        file: tasks/install-docker.yml
 
-    # - name: Install Docker Binary
-    #   ansible.builtin.import_tasks:
-    #     file: tasks/install-docker.yml
+    - name: Install Kafka
+      ansible.builtin.import_tasks:
+        file: tasks/install-kafka.yml
 
-    # - name: Run Kafka installation
-    #   ansible.builtin.include_role:
-    #     name: kafka_docker
-    #   when: inventory_hostname in groups['kafka']
+    - name: Install Sensor
+      ansible.builtin.import_tasks:
+        file: tasks/install-sensor.yml
 
-    # - name: Run Snort Sensor Installation
-    #   ansible.builtin.include_role:
-    #     name: snort_sensor
-    #   when: inventory_hostname in groups['sensor']
+    - name: Install Hadoop
+      ansible.builtin.import_tasks:
+        file: tasks/install-hadoop.yml
 
-    # - name: Run Hadoop Installation
-    #   ansible.builtin.include_role:
-    #     name: hadoop
-    #   when: inventory_hostname in groups['hadoop']
+    - name: Install Spark
+      ansible.builtin.import_tasks:
+        file: tasks/install-spark.yml
 
-    # - name: Run Spark Installation
-    #   ansible.builtin.include_role:
-    #     name: spark_docker
-    #   when: inventory_hostname in groups['spark']
-
-    # - name: Run Opensearch Installation
-    #   ansible.builtin.include_role:
-    #     name: opensearch_docker
-    #   when: inventory_hostname in groups['opensearch']
+    - name: Install OpenSearch
+      ansible.builtin.import_tasks:
+        file: tasks/install-opensearch.yml

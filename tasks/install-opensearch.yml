@@ -1,0 +1,55 @@
+---
+- name: Ensure OpenSearch directory exists
+  file:
+    path: "~/opensearch"
+    state: directory
+    mode: 0775
+
+- name: Ensure Opensearch docker image dir exists
+  file:
+    path: "~/opensearch/docker_image"
+    state: directory
+    mode: 0775
+
+- name: Increase number of memory map using sysctl
+  become: true
+  ansible.posix.sysctl:
+    name: vm.max_map_count
+    value: 262144
+    state: present
+
+- name: Copy docker image Opensearch related files to machine
+  ansible.builtin.copy:
+    src: "files/docker_images/{{ item }}"
+    dest: "~/opensearch/docker_image/"
+    mode: 0644
+  with_items:
+    - "opensearchproject_logstash-oss-with-opensearch-output-plugin.tar"
+    - "opensearchproject_opensearch-dashboards.tar"
+    - "opensearchproject_opensearch.tar"
+
+- name: Load docker image
+  ansible.builtin.shell: docker load -i {{ item }}
+  args:
+    chdir: ~/opensearch/docker_image
+  with_items:
+    - "opensearchproject_logstash-oss-with-opensearch-output-plugin.tar"
+    - "opensearchproject_opensearch-dashboards.tar"
+    - "opensearchproject_opensearch.tar"
+
+- name: Configure docker-compose environment
+  ansible.builtin.template: 
+    src: ./opensearch/docker-compose.yaml.j2
+    dest: "~/opensearch/docker-compose.yaml"
+    mode: 0755
+
+- name: Configure Pipeline config file
+  ansible.builtin.template:
+    src: ./opensearch/pipeline.conf.j2
+    dest: "~/opensearch/pipeline.conf"
+
+- name: deploy Docker Compose stack
+  community.docker.docker_compose:
+    project_src: "~/opensearch"
+    files:
+    - docker-compose.yaml

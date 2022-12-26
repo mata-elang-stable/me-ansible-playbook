@@ -1,3 +1,0 @@
----
-# vars file for hadoop
-__hadoop_listen_ip: "{{ ansible_default_ipv4.address }}"

@@ -11,6 +11,8 @@ timezone: Asia/Jakarta
 
 # docker
 docker_archive_filename: docker-20.10.9.tgz
+# Docker compose plugin download URL: https://github.com/docker/compose/releases/download/v2.14.2/docker-compose-linux-x86_64
+docker_compose_plugin_archive_filename: docker-compose-linux-x86_64
 hadoop_archive_filename: hadoop-3.3.4.tar.gz
 jdk_archive_filename: amazon-corretto-11-x64-linux-jdk.tar.gz
 
@@ -46,4 +48,9 @@ anonymous_login: true
 
 # hadoop
 hadoop_listen_ip: "{{ groups['hadoop'][0] }}"
+__hadoop_listen_ip: "{{ ansible_default_ipv4.address }}"
 hadoop_user_name: hadoop
+hadoop_version: "3.3.4"
+# haddop_listen_ip: "127.0.0.1"
+hadoop_archive_filename: hadoop-3.3.4.tar.gz
+jdk_archive_filename: amazon-corretto-11-x64-linux-jdk.tar.gz

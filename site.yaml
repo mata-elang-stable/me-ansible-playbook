@@ -9,31 +9,35 @@
       timezone:
         name: "{{ timezone }}"
   tasks:
-    - name: Install Docker Binary
+    - name: Instal Mata Elang Comp. All-In-One
       ansible.builtin.import_tasks:
-        file: tasks/install-docker.yml
+        file: tasks/main.yml
 
-    - name: Run Kafka installation
-      ansible.builtin.include_role:
-        name: kafka_docker
-      when: inventory_hostname in groups['kafka']
+    # - name: Install Docker Binary
+    #   ansible.builtin.import_tasks:
+    #     file: tasks/install-docker.yml
 
-    - name: Run Snort Sensor Installation
-      ansible.builtin.include_role:
-        name: snort_sensor
-      when: inventory_hostname in groups['sensor']
+    # - name: Run Kafka installation
+    #   ansible.builtin.include_role:
+    #     name: kafka_docker
+    #   when: inventory_hostname in groups['kafka']
 
-    - name: Run Hadoop Installation
-      ansible.builtin.include_role:
-        name: hadoop
-      when: inventory_hostname in groups['hadoop']
+    # - name: Run Snort Sensor Installation
+    #   ansible.builtin.include_role:
+    #     name: snort_sensor
+    #   when: inventory_hostname in groups['sensor']
 
-    - name: Run Spark Installation
-      ansible.builtin.include_role:
-        name: spark_docker
-      when: inventory_hostname in groups['spark']
+    # - name: Run Hadoop Installation
+    #   ansible.builtin.include_role:
+    #     name: hadoop
+    #   when: inventory_hostname in groups['hadoop']
 
-    - name: Run Opensearch Installation
-      ansible.builtin.include_role:
-        name: opensearch_docker
-      when: inventory_hostname in groups['opensearch']
+    # - name: Run Spark Installation
+    #   ansible.builtin.include_role:
+    #     name: spark_docker
+    #   when: inventory_hostname in groups['spark']
+
+    # - name: Run Opensearch Installation
+    #   ansible.builtin.include_role:
+    #     name: opensearch_docker
+    #   when: inventory_hostname in groups['opensearch']

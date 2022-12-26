@@ -1,4 +1,0 @@
-- hosts: all
-  remote_user: sensor-me
-  roles:
-    - snort_sensor

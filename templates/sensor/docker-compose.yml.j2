@@ -1,6 +1,8 @@
-version: '3'
+version: "3.8"
+name: "mataelang-sensor"
+
 services:
-  me-sensor-snort:
+  snort:
     build: 
       context: snort/
     network_mode: host
@@ -19,10 +21,10 @@ services:
           cpus: '0.7'
           memory: 256M
 
-  me-sensor-snort-parser:
+  snort-parser:
     image: {{me_sensor_snort_parser_image}}
     depends_on:
-      - me-sensor-snort
+      - snort
     restart: always
     environment:
       - MQTT_HOST={{sensor_mqtt_host}}

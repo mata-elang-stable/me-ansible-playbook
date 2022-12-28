@@ -14,12 +14,6 @@
     copy: false
     extra_opts: [--strip-components=1]
 
-# How to run docker daemon ? This command will not persist
-# - name: Running Docker Daemon
-#   become: true
-#   ansible.builtin.command:
-#     cmd: dockerd
-
 - name: Configure Docker systemd file
   become: true
   ansible.builtin.template:

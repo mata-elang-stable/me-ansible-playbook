@@ -1,6 +1,6 @@
 ---
 # defaults file for mata-elang-ansible
-me_sensor_snort_parser_image: mataelang/snort3-parser:latest
+me_sensor_snort_parser_image: mataelang/snort3-parser:1.1
 sensor_network_interface: enp0s8
 sensor_oinkcode: xxxxxxx
 sensor_home_net: 192.168.56.0/24
@@ -26,15 +26,17 @@ kafka_cluster_bootstrap_server: kafka:9092
 kafka_cluster_zookeeper: zookeeper:2181
 
 # kafka
-kafka_config_zookeper: zookeeper:2181
+kafka_image: confluentinc/cp-kafka:7.3.0
+kafka_config_zookeeper: zookeeper:2181
 config_plaintext_listener: true
 kafka_config_log_dirs: /tmp/kafka_mounts/logs
-kafka_config_advertised_listeners: CLIENT://kafka:9092,EXTERNAL://172.17.0.1:9093
+kafka_config_advertised_listeners: PLAINTEXT://kafka:9092,EXTERNAL://172.17.0.1:9093
 kafka_config_listeners: CLIENT://:9092,EXTERNAL://0.0.0.0:9093
-kafka_config_security_proto: CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+kafka_config_security_proto: PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
 kafka_config_broker_listener: CLIENT
 
 # mqtt-source
+mqtt_image: mataelang/kafka-mqtt-source:1.1
 mqtt_host: mosquitto
 mqtt_port: 1883
 mqtt_username: ""
@@ -44,8 +46,22 @@ kafka_bootstrap_servers: kafka:9092
 kafka_topic: sensor_events
 
 # zookeeper
-anonymous_login: true
+zookeeper_image: confluentinc/cp-zookeeper:7.3.0
 
 # hadoop
 hadoop_listen_ip: "{{ groups['hadoop'][0] }}"
+__hadoop_listen_ip: "{{ ansible_default_ipv4.address }}"
 hadoop_user_name: hadoop
+hadoop_version: "3.3.4"
+# haddop_listen_ip: "127.0.0.1"
+hadoop_archive_filename: hadoop-3.3.4.tar.gz
+jdk_archive_filename: amazon-corretto-11-x64-linux-jdk.tar.gz
+
+#spark
+spark_master: spark://spark-master:7077
+spark_checkpoint_path: hdfs://172.17.0.1:9000/user/hadoop/kafka-checkpoint
+spark_kafka_server: 172.17.0.1:9093
+spark_input_topic: sensor_events
+sensor_output_topic: sensor_events_with_geoip
+maxmind_db_path: hdfs://172.17.0.1:9000/user/hadoop/kaspacore/files/GeoLite2-City.mmdb
+maxmind_db_filename: GeoLite2-City.mmdb

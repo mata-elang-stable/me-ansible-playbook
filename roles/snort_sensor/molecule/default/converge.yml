@@ -1,7 +1,0 @@
----
-- name: Converge
-  hosts: all
-  tasks:
-    - name: "Include me.snort_sensor"
-      include_role:
-        name: "me.snort_sensor"

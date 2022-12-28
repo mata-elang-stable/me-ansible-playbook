@@ -1,19 +1,2 @@
-[all:vars]
-ansible_ssh_user=username
-ansible_ssh_password=password
-ansible_become_password=password
+192.168.56.11 sensor_network_interface=enp0s8 ansible_ssh_user=username ansible_ssh_password=password ansible_become_password=password
 
-[sensor]
-192.168.56.11 sensor_network_interface=enp0s8
-
-[hadoop]
-192.168.56.101
-
-[kafka]
-192.168.56.101
-
-[spark]
-192.168.56.101
-
-[opensearch]
-192.168.56.101

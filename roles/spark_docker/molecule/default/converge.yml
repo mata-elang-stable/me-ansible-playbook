@@ -1,7 +1,0 @@
----
-- name: Converge
-  hosts: all
-  tasks:
-    - name: "Include me.kafka"
-      include_role:
-        name: "me.kafka"

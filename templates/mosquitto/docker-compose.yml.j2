@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+version: '3'
+
+volumes:
+  mosquitto_data:
+
+services:
+  mosquitto:
+    image: {{ mosquitto_image_name }}
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mosquitto_passwd:/mosquitto/config/password_file
+      - mosquitto_data:/mosquitto/data
+    ports:
+      - 1883:1883
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M

@@ -1,34 +1,50 @@
 ---
 - name: Install Mata Elang Platform
   hosts: all
+  gather_facts: true
   vars_files:
     - defaults/main.yml
   pre_tasks:
     - name: Set Timezone to local
       become: true
-      timezone:
+      community.general.timezone:
         name: "{{ timezone }}"
-  tasks:
+    - name: Check if Docker already installed
+      ansible.builtin.stat:
+        path: ~/bin/docker
+      register: docker_command_exists
+      changed_when: false
     - name: Install Docker Binary
       ansible.builtin.import_tasks:
-        file: tasks/install-docker.yml
+        file: tasks/install-docker-rootless.yml
+      when: docker_command_exists.stat.exists
+  tasks:
+    - name: Install Mosquitto
+      ansible.builtin.import_tasks:
+        file: tasks/install-mosquitto.yml
+      when: inventory_hostname in groups['mosquitto']
 
     - name: Install Kafka
       ansible.builtin.import_tasks:
         file: tasks/install-kafka.yml
+      when: inventory_hostname in groups['kafka']
 
     - name: Install Sensor
       ansible.builtin.import_tasks:
         file: tasks/install-sensor.yml
+      when: inventory_hostname in groups['sensor']
 
     - name: Install Hadoop
       ansible.builtin.import_tasks:
         file: tasks/install-hadoop.yml
+      when: inventory_hostname in groups['hadoop']
 
     - name: Install Spark
       ansible.builtin.import_tasks:
         file: tasks/install-spark.yml
+      when: inventory_hostname in groups['spark']
 
     - name: Install OpenSearch
       ansible.builtin.import_tasks:
         file: tasks/install-opensearch.yml
+      when: inventory_hostname in groups['opensearch']

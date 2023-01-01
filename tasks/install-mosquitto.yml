@@ -1,0 +1,81 @@
+---
+- name: Ensure Mosquitto directory exists
+  ansible.builtin.file:
+    path: "~/mosquitto"
+    state: directory
+    mode: 0755
+
+- name: Ensure Mosquitto docker image dir exists
+  ansible.builtin.file:
+    path: "~/mosquitto/docker_image"
+    state: directory
+    mode: 0755
+
+- name: Copy Docker image mosquitto related files to machine
+  ansible.builtin.copy:
+    src: "files/docker_images/{{ mosquitto_image_filename }}"
+    dest: "~/mosquitto/docker_image/"
+    mode: 0644
+
+- name: Load Docker Images
+  community.docker.docker_image_load:
+    docker_host: unix://run/user/1000/docker.sock
+    path: "~/mosquitto/docker_image/{{ mosquitto_image_filename }}"
+
+- name: Cleanup Docker image tar
+  ansible.builtin.file:
+    path: "files/docker_images/{{ mosquitto_image_filename }}"
+    state: absent
+
+- name: Check if docker-compose.yaml file exists
+  ansible.builtin.stat:
+    path: ~/mosquitto/docker-compose.yml
+  register: mosquitto_compose_file
+
+- name: Stop the Services
+  community.docker.docker_compose:
+    docker_host: unix://run/user/1000/docker.sock
+    project_src: ~/mosquitto
+    remove_orphans: true
+    remove_volumes: true
+    state: absent
+  when: mosquitto_compose_file.stat.exists
+
+- name: Configure docker-compose environment
+  ansible.builtin.template:
+    src: ./mosquitto/docker-compose.yml.j2
+    dest: "~/mosquitto/docker-compose.yml"
+    mode: 0755
+
+- name: Configure mosquitto user password
+  community.docker.docker_container:
+    name: mosquitto-passwd
+    image: eclipse-mosquitto:2.0.15
+    detach: false
+    state: started
+    entrypoint: /bin/sh
+    command: -c "/usr/bin/mosquitto_passwd -c -b pass_file {{ mosquitto_username }} {{ mosquitto_password }} && cat pass_file"
+  register: pass_file
+
+- name: Save user and password to pass file
+  ansible.builtin.copy:
+    dest: ~/mosquitto/mosquitto_passwd
+    content: "{{ pass_file.container.Output }}"
+    mode: 0600
+
+- name: Remove old container
+  community.docker.docker_container:
+    name: mosquitto-passwd
+    state: absent
+
+- name: Configure mosquitto.conf
+  ansible.builtin.template:
+    src: ./mosquitto/mosquitto.conf.j2
+    dest: ~/mosquitto/mosquitto.conf
+    mode: 0755
+
+- name: Running the Services
+  community.docker.docker_compose:
+    docker_host: unix://run/user/1000/docker.sock
+    project_src: ~/mosquitto
+    state: present

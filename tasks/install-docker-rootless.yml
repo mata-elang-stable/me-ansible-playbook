@@ -1,0 +1,124 @@
+# code: language=ansible
+---
+- name: Add extra path to path
+  ansible.builtin.lineinfile:
+    dest: ~/.bashrc
+    state: present
+    # backrefs: true
+    line: 'export PATH={{ extra_path }}:$PATH'
+    # regexp: 'PATH=(["]*)((?!.*?{{ extra_path }}).*?)(["]*)$'
+    # line: PATH=\1\2:{{ extra_path }}\3
+  vars:
+    extra_path: "{{ ansible_env.HOME }}/bin"
+
+- name: Ensure bin directory exists in HOME directory
+  ansible.builtin.file:
+    path: "~/bin"
+    state: directory
+    mode: 0755
+
+- name: Ensure systemd directory exists in HOME directory
+  ansible.builtin.file:
+    path: "~/.config/systemd/user"
+    state: directory
+    mode: 0755
+
+- name: Ensure Docker directory exists in HOME directory
+  ansible.builtin.file:
+    path: "~/.docker/cli-plugins/"
+    state: directory
+    mode: 0755
+
+- name: Configure sysctl
+  become: true
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+  with_items:
+    - { key: "kernel.unprivileged_userns_clone", value: 1 }
+    - { key: "user.max_user_namespaces", value: 28633 }
+
+- name: Copy Docker Binary Archive
+  ansible.builtin.copy:
+    src: "files/{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0644
+  with_items:
+    - { src: "{{ docker_archive_filename }}", dest: "/tmp/" }
+    - { src: "{{ docker_rootless_archive_filename }}", dest: "/tmp/" }
+    - { src: "{{ docker_compose_plugin_archive_filename }}", dest: "~/.docker/cli-plugins/docker-compose" }
+
+- name: Copy required packages
+  ansible.builtin.copy:
+    src: "files/{{ item }}"
+    dest: "/tmp/"
+    mode: 0644
+  with_items:
+    - "{{ docker_required_deb_packages_filename }}"
+    - "{{ python3_required_libs_filename }}"
+
+- name: Install required packages using apt
+  become: true
+  ansible.builtin.apt:
+    deb: "/tmp/{{ item }}"
+    state: present
+  with_items: "{{ docker_required_deb_packages_filename }}"
+
+- name: Install Docker py using pip
+  ansible.builtin.pip:
+    executable: pip
+    state: present
+    name:
+      - file:///tmp/{{ item }}
+    extra_args: --user
+  with_items: "{{ python3_required_libs_filename }}"
+
+- name: Extract Docker Binary Archive
+  ansible.builtin.unarchive:
+    src: "/tmp/{{ item }}"
+    dest: "~/bin/"
+    copy: false
+    extra_opts: [--strip-components=1]
+  with_items:
+    - "{{ docker_archive_filename }}"
+    - "{{ docker_rootless_archive_filename }}"
+
+- name: Run Docker rootless install
+  ansible.builtin.shell:
+    cmd: dockerd-rootless-setuptool.sh install
+    executable: bash
+  environment:
+    PATH: "{{ ansible_env.HOME }}/bin:{{ ansible_env.PATH }}"
+  register: docker_install
+  changed_when: docker_install.rc == 0
+
+- name: Install Docker Compose plugin
+  ansible.builtin.copy:
+    src: "files/{{ docker_compose_plugin_archive_filename }}"
+    dest: "~/.docker/cli-plugins/docker-compose"
+    mode: 0755
+
+- name: Add Docker DOCKER_HOST variable to bashrc file
+  ansible.builtin.lineinfile:
+    dest: ~/.bashrc
+    state: present
+    line: export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock
+
+- name: Restart service cron also issue daemon-reload to pick up config changes
+  ansible.builtin.systemd:
+    state: started
+    enabled: true
+    daemon_reload: true
+    name: docker
+    scope: user
+
+- name: Cleanup temporary files
+  ansible.builtin.file:
+    path: "/tmp/{{ item }}"
+    state: absent
+  with_items:
+    - "{{ docker_archive_filename }}"
+    - "{{ docker_rootless_archive_filename }}"
+    - "{{ docker_required_deb_packages_filename }}"
+    - "{{ python3_required_libs_filename }}"

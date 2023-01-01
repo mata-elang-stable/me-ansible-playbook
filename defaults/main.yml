@@ -10,27 +10,73 @@ sensor_mqtt_password: ""
 timezone: Asia/Jakarta
 
 # archive
+# Docker static binary URL: https://download.docker.com/linux/static/stable/x86_64/
 docker_archive_filename: docker-20.10.9.tgz
+docker_rootless_archive_filename: docker-rootless-extras-20.10.9.tgz
 # Docker compose plugin download URL: https://github.com/docker/compose/releases/download/v2.14.2/docker-compose-linux-x86_64
 docker_compose_plugin_archive_filename: docker-compose-linux-x86_64
 hadoop_archive_filename: hadoop-3.3.4.tar.gz
 jdk_archive_filename: amazon-corretto-11-x64-linux-jdk.tar.gz
 
+docker_required_deb_packages_filename:
+  - python-pip-whl_20.0.2-5ubuntu1.5_all.deb
+  - python3-distutils_3.8.10-0ubuntu1~20.04_all.deb
+  - python3-wheel_0.34.2-1_all.deb
+  - python3-pip_20.0.2-5ubuntu1.5_all.deb
+  - uidmap_4.8.1-1ubuntu5.20.04.4_amd64.deb
+
+python3_required_libs_filename:
+  - packaging-22.0-py3-none-any.whl
+  - urllib3-1.26.13-py2.py3-none-any.whl
+  - websocket_client-0.59.0-py2.py3-none-any.whl
+  - charset_normalizer-2.1.1-py3-none-any.whl
+  - requests-2.28.1-py3-none-any.whl
+  - distro-1.8.0-py3-none-any.whl
+  - docopt-0.6.2.tar.gz
+  - texttable-1.6.7-py2.py3-none-any.whl
+  - python_dotenv-0.21.0-py3-none-any.whl
+  - bcrypt-4.0.1-cp36-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  - paramiko-2.12.0-py2.py3-none-any.whl
+  - dockerpty-0.4.1.tar.gz
+  - docker-6.0.1-py3-none-any.whl
+  - docker_compose-1.29.2-py2.py3-none-any.whl
+
+mosquitto_image_filename: eclipse-mosquitto_2.0.15.tar
+kafka_image_filenames:
+  - confluentinc_cp-kafka_7.3.0.tar
+  - confluentinc_cp-zookeeper_7.3.0.tar
+  - mataelang_kafka-mqtt-source_1.1.tar
+  - provectuslabs_kafka-ui.tar
+  - eclipse-mosquitto_2.0.15.tar
+
 # sensor
-snort_local_rules:
-  - 'alert icmp any any -> any any (msg:"ICMP test detected"; gid:1; sid:10000001; rev:001; classtype:icmp-event;)'
+snort_local_rules: {}
+  # - 'alert icmp any any -> any any (msg:"ICMP test detected"; gid:1; sid:10000001; rev:001; classtype:icmp-event;)'
 
-# control-center
+# install mosquitto
+mosquitto_image_name: eclipse-mosquitto:2.0.15
+mosquitto_username: mataelang
+mosquitto_password: mataelang
+mosquitto_configs: {
+  listener: 1883,
+  allow_anonymous: "false",
+  persistence: "true",
+  persistence_location: /mosquitto/data/,
+  autosave_interval: 60,
+  queue_qos0_messages: "true",
+  max_queued_messages: 100000,
+  max_inflight_messages: 10000,
+  connection_messages: "true",
+  log_dest: stdout,
+  persistent_client_expiration: "1h",
+  password_file: /
+}
+
+# install kafka
 kafka_cluster_name: MataElangKafkaCluster
-kafka_cluster_bootstrap_server: kafka:9092
-kafka_cluster_zookeeper: zookeeper:2181
-
-# kafka
 kafka_image: confluentinc/cp-kafka:7.3.0
-kafka_config_zookeeper: zookeeper:2181
-config_plaintext_listener: true
-kafka_config_log_dirs: /tmp/kafka_mounts/logs
-kafka_config_advertised_listeners: PLAINTEXT://kafka:9092,EXTERNAL://172.17.0.1:9093
+kafka_ui_image: provectuslabs/kafka-ui
+kafka_config_advertised_listeners: PLAINTEXT://kafka:9092,EXTERNAL://{{ groups['kafka'][0] }}:9093
 kafka_config_listeners: CLIENT://:9092,EXTERNAL://0.0.0.0:9093
 kafka_config_security_proto: PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
 kafka_config_broker_listener: CLIENT
@@ -42,6 +88,8 @@ mqtt_port: 1883
 mqtt_username: ""
 mqtt_password: ""
 mqtt_topic: mataelang/sensor/v3/+
+
+# Kafka
 kafka_bootstrap_servers: kafka:9092
 kafka_topic: sensor_events
 
@@ -54,10 +102,8 @@ __hadoop_listen_ip: "{{ ansible_default_ipv4.address }}"
 hadoop_user_name: hadoop
 hadoop_version: "3.3.4"
 # haddop_listen_ip: "127.0.0.1"
-hadoop_archive_filename: hadoop-3.3.4.tar.gz
-jdk_archive_filename: amazon-corretto-11-x64-linux-jdk.tar.gz
 
-#spark
+# spark
 spark_master: spark://spark-master:7077
 spark_checkpoint_path: hdfs://172.17.0.1:9000/user/hadoop/kafka-checkpoint
 spark_kafka_server: 172.17.0.1:9093

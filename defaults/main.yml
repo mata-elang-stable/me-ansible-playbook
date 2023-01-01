@@ -69,7 +69,7 @@ mosquitto_configs: {
   connection_messages: "true",
   log_dest: stdout,
   persistent_client_expiration: "1h",
-  password_file: /
+  password_file: /mosquitto/config/password_file
 }
 
 # install kafka

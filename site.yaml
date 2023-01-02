@@ -5,19 +5,22 @@
   vars_files:
     - defaults/main.yml
   pre_tasks:
+    - name: Gather the package facts
+      ansible.builtin.package_facts:
+        manager: apt
     - name: Set Timezone to local
       become: true
       community.general.timezone:
         name: "{{ timezone }}"
-    - name: Check if Docker already installed
+    - name: Check if Docker rootless already installed
       ansible.builtin.stat:
         path: ~/bin/docker
       register: docker_command_exists
-      changed_when: false
     - name: Install Docker Binary
       ansible.builtin.import_tasks:
         file: tasks/install-docker-rootless.yml
-      when: docker_command_exists.stat.exists
+      when: not docker_command_exists.stat.exists and
+            ('docker-ce' not in ansible_facts.packages or 'docker' not in ansible_facts.packages)
   tasks:
     - name: Install Mosquitto
       ansible.builtin.import_tasks:

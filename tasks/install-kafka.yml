@@ -49,6 +49,7 @@
     src: ./kafka/docker-compose.yml.j2
     dest: "~/kafka/docker-compose.yml"
     mode: 0755
+    force: yes
 
 - name: Running the Services
   community.docker.docker_compose:

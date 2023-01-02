@@ -5,19 +5,13 @@
   when: hadoop_listen_ip is not defined
 
 - name: Create service account for Apache Hadoop
-  become: true
   ansible.builtin.user:
-    name: "hadoop"
-    home: "/home/hadoop"
-    shell: "/bin/bash"
-    state: present
+    name: "{{ ansible_ssh_user }}"
     generate_ssh_key: true
 
 - name: Set authorized key taken from file
-  become: true
-  become_user: hadoop
   ansible.builtin.shell:
-    cmd: cat /home/hadoop/.ssh/id_rsa.pub > /home/hadoop/.ssh/authorized_keys
+    cmd: cat ~/.ssh/id_rsa.pub > ~/.ssh/authorized_keys
 
 - name: Copy JDK Archive
   ansible.builtin.copy:
@@ -26,26 +20,20 @@
     mode: 0644
 
 - name: Ensure jdk directory exists
-  become: true
   ansible.builtin.file:
     path: "{{ item }}"
     mode: 0775
     state: directory
-    owner: "hadoop"
-    group: "hadoop"
   with_items:
-    - "/opt/jdk"
-    - "/opt/hadoop"
+    - "~/jdk"
+    - "~/hadoop"
 
 - name: Extract JDK distribution
-  become: true
   ansible.builtin.unarchive:
     src: "/tmp/{{ jdk_archive_filename }}"
-    dest: "/opt/jdk"
-    creates: "/opt/jdk/bin"
+    dest: "~/jdk"
+    creates: "~/jdk/bin"
     copy: false
-    owner: "hadoop"
-    group: "hadoop"
     extra_opts: [--strip-components=1]
 
 - name: Copy Hadoop Archive
@@ -55,68 +43,53 @@
     mode: 0644
 
 - name: Extract Hadoop distribution
-  become: true
   ansible.builtin.unarchive:
     src: "/tmp/{{ hadoop_archive_filename }}"
-    dest: "/opt/hadoop"
-    creates: "/opt/hadoop/etc"
+    dest: "~/hadoop"
+    creates: "~/hadoop/etc"
     copy: false
-    owner: "hadoop"
-    group: "hadoop"
     extra_opts: [--strip-components=1]
 
 - name: Configure hadoop-env.sh file
-  become: true
   ansible.builtin.template:
     src: "./hadoop/hadoop-env.sh.j2"
-    dest: "/opt/hadoop/etc/hadoop/hadoop-env.sh"
+    dest: "~/hadoop/etc/hadoop/hadoop-env.sh"
     mode: 0755
 
 - name: Configure core-site.xml file
-  become: true
   ansible.builtin.template:
     src: "./hadoop/core-site.xml.j2"
-    dest: "/opt/hadoop/etc/hadoop/core-site.xml"
+    dest: "~/hadoop/etc/hadoop/core-site.xml"
     mode: 0755
 
 - name: Configure hdfs-site.xml file
-  become: true
   ansible.builtin.template:
     src: "./hadoop/hdfs-site.xml.j2"
-    dest: "/opt/hadoop/etc/hadoop/hdfs-site.xml"
+    dest: "~/hadoop/etc/hadoop/hdfs-site.xml"
     mode: 0755
 
 - name: Stop Hadoop service
-  become: true
   ansible.builtin.shell:
-    cmd: /opt/hadoop/sbin/stop-dfs.sh
+    cmd: ~/hadoop/sbin/stop-dfs.sh
 
 - name: Remove hadoop_data folder
-  become: true
   ansible.builtin.file:
-    path: /home/hadoop/hadoop_data
+    path: ~/hadoop_data
     state: absent
 
 - name: Ensure folder logs exist
-  become: true
   ansible.builtin.file:
-    path: "/opt/hadoop/logs"
+    path: "~/hadoop/logs"
     mode: 0775
     state: directory
-    owner: "hadoop"
-    group: "hadoop"
 
 - name: Format a Hadoop Namenode
-  become: true
-  become_user: hadoop
   ansible.builtin.shell:
-    cmd: /opt/hadoop/bin/hdfs namenode -format
+    cmd: ~/hadoop/bin/hdfs namenode -format
 
 - name: Start Hadoop service
-  become: true
-  become_user: hadoop
   ansible.builtin.shell:
-    cmd: /opt/hadoop/sbin/start-dfs.sh
+    cmd: ~/hadoop/sbin/start-dfs.sh
 
 - name: Copy Kaspacore related file to machine
   ansible.builtin.copy:
@@ -132,20 +105,22 @@
     minutes: 2
 
 - name: Create Hadoop needed directory
-  become: true
-  become_user: hadoop
   ansible.builtin.shell:
     cmd: "{{ item }}"
   with_items:
-    - "/opt/hadoop/bin/hdfs dfs -mkdir -p hdfs://localhost:9000/user/hadoop/kaspa-checkpoint"
-    - "/opt/hadoop/bin/hdfs dfs -mkdir -p hdfs://localhost:9000/user/hadoop/file/maxmind"
-    - "/opt/hadoop/bin/hdfs dfs -mkdir -p hdfs://localhost:9000/user/hadoop/spark/spark-events"
+    - "~/hadoop/bin/hdfs dfs -mkdir -p hdfs://localhost:9000/user/{{ ansible_ssh_user }}/kaspa-checkpoint"
+    - "~/hadoop/bin/hdfs dfs -mkdir -p hdfs://localhost:9000/user/{{ ansible_ssh_user }}/kaspacore/files"
+    - "~/hadoop/bin/hdfs dfs -mkdir -p hdfs://localhost:9000/user/{{ ansible_ssh_user }}/spark/spark-events"
 
 - name: Upload GeoLite2-City Maxmind Geo Database
-  become: true
-  become_user: hadoop
   ansible.builtin.shell:
     cmd: "{{ item }}"
   with_items:
-    - "/opt/hadoop/bin/hdfs dfs -put /tmp/GeoLite2-City.mmdb /user/hadoop/file/maxmind"
-    - "/opt/hadoop/bin/hdfs dfs -put /tmp/kaspacore.jar /user/hadoop/file"
+    - "~/hadoop/bin/hdfs dfs -put /tmp/GeoLite2-City.mmdb /user/{{ ansible_ssh_user }}/kaspacore/files"
+    - "~/hadoop/bin/hdfs dfs -put /tmp/kaspacore.jar /user/{{ ansible_ssh_user }}/kaspacore/files"
+
+- name: Cleanup Hadoop tar
+  ansible.builtin.file:
+    path: "/tmp/{{ item }}"
+    state: absent
+  with_items: "{{ hadoop_archive_filename }}"

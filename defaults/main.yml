@@ -99,7 +99,6 @@ zookeeper_image: confluentinc/cp-zookeeper:7.3.0
 # hadoop
 hadoop_listen_ip: "{{ groups['hadoop'][0] }}"
 __hadoop_listen_ip: "{{ ansible_default_ipv4.address }}"
-hadoop_user_name: hadoop
 hadoop_version: "3.3.4"
 # haddop_listen_ip: "127.0.0.1"
 

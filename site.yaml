@@ -32,11 +32,6 @@
         file: tasks/install-kafka.yml
       when: inventory_hostname in groups['kafka']
 
-    - name: Install Sensor
-      ansible.builtin.import_tasks:
-        file: tasks/install-sensor.yml
-      when: inventory_hostname in groups['sensor']
-
     - name: Install Hadoop
       ansible.builtin.import_tasks:
         file: tasks/install-hadoop.yml
@@ -51,3 +46,8 @@
       ansible.builtin.import_tasks:
         file: tasks/install-opensearch.yml
       when: inventory_hostname in groups['opensearch']
+
+    - name: Install Sensor
+      ansible.builtin.import_tasks:
+        file: tasks/install-sensor.yml
+      when: inventory_hostname in groups['sensor']

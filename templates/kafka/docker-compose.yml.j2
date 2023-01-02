@@ -1,4 +1,4 @@
-version: '3'
+version: '3.3'
 name: mataelang
 
 volumes:
@@ -8,16 +8,16 @@ volumes:
 
 services:
   mqtt-source:
-    image: {{mqtt_image}}
+    image: {{ mqtt_image }}
     container_name: mqtt-source
     environment:
-      MQTT_HOST: {{mqtt_host}}
-      MQTT_PORT: {{mqtt_port}}
-      MQTT_USERNAME: {{mqtt_username}}
-      MQTT_PASSWORD: {{mqtt_password}}
-      MQTT_TOPIC: {{mqtt_topic}}
-      KAFKA_BOOSTRAP_SERVERS: {{kafka_bootstrap_servers}}
-      KAFKA_PRODUCE_TOPIC: {{kafka_topic}}
+      MQTT_HOST: {{ mqtt_host }}
+      MQTT_PORT: {{ mqtt_port }}
+      MQTT_USERNAME: {{ mqtt_username }}
+      MQTT_PASSWORD: {{ mqtt_password }}
+      MQTT_TOPIC: {{ mqtt_topic }}
+      KAFKA_BOOSTRAP_SERVERS: kafka:9092
+      KAFKA_PRODUCE_TOPIC: {{ kafka_topic }}
     deploy:
       resources:
         limits:
@@ -28,7 +28,7 @@ services:
           memory: 32M
 
   zookeeper:
-    image: {{zookeeper_image}}
+    image: {{ zookeeper_image }}
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -49,7 +49,7 @@ services:
           memory: 256M
 
   kafka:
-    image: {{kafka_image}}
+    image: {{ kafka_image }}
     depends_on:
       - zookeeper
     ports:
@@ -59,9 +59,9 @@ services:
         mode: host
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: {{kafka_config_zookeeper}}
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: {{kafka_config_security_proto}}
-      KAFKA_ADVERTISED_LISTENERS: {{kafka_config_advertised_listeners}}
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: {{ kafka_config_security_proto }}
+      KAFKA_ADVERTISED_LISTENERS: {{ kafka_config_advertised_listeners }}
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
@@ -79,7 +79,7 @@ services:
           memory: 1G
 
   control-center:
-    image: provectuslabs/kafka-ui
+    image: {{ kafka_ui_image }}
     container_name: control-center
     depends_on:
       - zookeeper
@@ -88,7 +88,7 @@ services:
     ports:
       - "9021:8080"
     environment:
-      KAFKA_CLUSTERS_0_NAME: MataElangKafkaCluster
+      KAFKA_CLUSTERS_0_NAME: {{ kafka_cluster_name }}
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
     deploy:

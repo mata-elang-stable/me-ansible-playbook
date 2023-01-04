@@ -3,30 +3,30 @@
   ansible.builtin.file:
     path: "~/kafka"
     state: directory
-    mode: 0755
+    mode: 0775
 
 - name: Ensure Kafka docker image dir exists
   ansible.builtin.file:
     path: "~/kafka/docker_image"
     state: directory
-    mode: 0755
+    mode: 0775
 
 - name: Copy docker image kafka related files to machine
   ansible.builtin.copy:
     src: "files/docker_images/{{ item }}"
     dest: "~/kafka/docker_image/"
-    mode: 0644
+    mode: 0775
   with_items: "{{ kafka_image_filenames }}"
 
 - name: Load Docker Images
   community.docker.docker_image_load:
-    docker_host: unix://run/user/1000/docker.sock
+    docker_host: "unix:/{{ ansible_env.XDG_RUNTIME_DIR }}/docker.sock"
     path: "~/kafka/docker_image/{{ item }}"
   with_items: "{{ kafka_image_filenames }}"
 
 - name: Cleanup Docker image tar
   ansible.builtin.file:
-    path: "files/docker_images/{{ item }}"
+    path: "~/kafka/docker_image/{{ item }}"
     state: absent
   with_items: "{{ kafka_image_filenames }}"
 
@@ -37,7 +37,7 @@
 
 - name: Stop the Services
   community.docker.docker_compose:
-    docker_host: unix://run/user/1000/docker.sock
+    docker_host: "unix:/{{ ansible_env.XDG_RUNTIME_DIR }}/docker.sock"
     project_src: ~/kafka
     remove_orphans: true
     remove_volumes: true
@@ -48,7 +48,7 @@
   ansible.builtin.template:
     src: ./kafka/docker-compose.yml.j2
     dest: "~/kafka/docker-compose.yml"
-    mode: 0755
+    mode: 0775
     force: yes
 
 - name: Running the Services

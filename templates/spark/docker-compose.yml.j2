@@ -1,5 +1,4 @@
 version: '3.4'
-name: mataelang
 
 x-spark-default-env:
   &spark-default-env
@@ -117,7 +116,7 @@ services:
       <<: *spark-default-env
       SPARK_MASTER_HOST: spark-master
       SPARK_MASTER_PORT: 7077
-      DEPLOY_MODE: cluster
+      DEPLOY_MODE: client
       TOTAL_EXECUTOR_CORES: 1
       SPARK_DRIVER_MEMORY: 1g
       SPARK_EXECUTOR_CORES: 1
@@ -148,7 +147,7 @@ services:
       <<: *spark-default-env
       SPARK_MASTER_HOST: spark-master
       SPARK_MASTER_PORT: 7077
-      DEPLOY_MODE: cluster
+      DEPLOY_MODE: client
       TOTAL_EXECUTOR_CORES: 1
       SPARK_DRIVER_MEMORY: 2g
       SPARK_EXECUTOR_CORES: 1

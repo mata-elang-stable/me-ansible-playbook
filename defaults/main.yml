@@ -3,8 +3,8 @@
 me_sensor_snort_parser_image: mataelang/snort3-parser:1.1
 sensor_network_interface: enp0s8
 sensor_oinkcode: xxxxxxx
-sensor_home_net: 192.168.56.0/24
-sensor_mqtt_host: 192.168.56.101
+sensor_home_net: 192.168.8.0/24
+sensor_mqtt_host: 192.168.8.xxx
 sensor_mqtt_username: ""
 sensor_mqtt_password: ""
 timezone: Asia/Jakarta
@@ -48,6 +48,15 @@ kafka_image_filenames:
   - mataelang_kafka-mqtt-source_1.1.tar
   - provectuslabs_kafka-ui.tar
   - eclipse-mosquitto_2.0.15.tar
+sensor_image_filenames:
+  - "mataelang_snort3-parser_1.1.tar"
+  - "mataelang_snort-base_3.1.47.0-alpine-3.tar"
+spark_image_filename: mataelang_spark_3.3.1-scala2.13.tar
+opensearch_image_filenames:
+  - "opensearchproject_logstash-oss-with-opensearch-output-plugin_8.4.0.tar"
+  - "opensearchproject_opensearch-dashboards_2.4.0.tar"
+  - "opensearchproject_opensearch_2.4.0.tar"
+
 
 # sensor
 snort_local_rules: {}
@@ -76,7 +85,7 @@ mosquitto_configs: {
 kafka_cluster_name: MataElangKafkaCluster
 kafka_image: confluentinc/cp-kafka:7.3.0
 kafka_ui_image: provectuslabs/kafka-ui
-kafka_config_advertised_listeners: PLAINTEXT://kafka:9092,EXTERNAL://{{ groups['kafka'][0] }}:9093
+kafka_config_advertised_listeners: "PLAINTEXT://kafka:9092,EXTERNAL://{{ groups['kafka'][0] }}:9093"
 kafka_config_listeners: CLIENT://:9092,EXTERNAL://0.0.0.0:9093
 kafka_config_security_proto: PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
 kafka_config_broker_listener: CLIENT
@@ -104,9 +113,9 @@ hadoop_version: "3.3.4"
 
 # spark
 spark_master: spark://spark-master:7077
-spark_checkpoint_path: hdfs://172.17.0.1:9000/user/hadoop/kafka-checkpoint
+spark_checkpoint_path: "hdfs://{{ groups['hadoop'][0] }}:9000/user/{{ ansible_ssh_user }}/kafka-checkpoint"
 spark_kafka_server: 172.17.0.1:9093
 spark_input_topic: sensor_events
-sensor_output_topic: sensor_events_with_geoip
-maxmind_db_path: hdfs://172.17.0.1:9000/user/hadoop/kaspacore/files/GeoLite2-City.mmdb
+spark_output_topic: sensor_events_with_geoip
+maxmind_db_path: hdfs://{{ groups['hadoop'][0] }}:9000/user/{{ ansible_ssh_user }}/kaspacore/files/GeoLite2-City.mmdb
 maxmind_db_filename: GeoLite2-City.mmdb

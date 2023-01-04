@@ -35,6 +35,8 @@ image_list=(
     confluentinc/cp-zookeeper:7.3.0
     confluentinc/cp-kafka:7.3.0
     provectuslabs/kafka-ui
+    mataelang/snort-base:3.1.47.0-alpine-3
+    docker pull mataelang/snort3-parser:1.1
     mataelang/spark:3.3.1-scala2.13
     opensearchproject/opensearch:2.4.0
     opensearchproject/opensearch-dashboards:2.4.0

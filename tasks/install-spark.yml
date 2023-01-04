@@ -15,22 +15,26 @@
   ansible.builtin.copy:
     src: "files/docker_images/{{ item }}"
     dest: "~/spark/docker_image/"
-    mode: 0644
-  with_items:
-    - "mataelang_spark_3.3.1-scala2.13.tar"
+    mode: 0775
+  with_items: "{{ spark_image_filename }}"
 
 - name: Load docker image
-  ansible.builtin.shell: docker load -i {{ item }}
-  args:
-    chdir: ~/spark/docker_image
-  with_items:
-    - "mataelang_spark_3.3.1-scala2.13.tar"
+  community.docker.docker_image_load:
+    docker_host: "unix:/{{ ansible_env.XDG_RUNTIME_DIR }}/docker.sock"
+    path: "~/spark/docker_image/{{ item }}"
+  with_items: "{{ spark_image_filename }}"
 
 - name: Configure docker-compose environment
   ansible.builtin.template: 
     src: ./spark/docker-compose.yml.j2
     dest: "~/spark/docker-compose.yml"
-    mode: 0755
+    mode: 0775
+
+- name: Configure environment file
+  ansible.builtin.template: 
+    src: ./spark/.env.j2
+    dest: "~/spark/.env"
+    mode: 0775
 
 - name: Ensure Conf directory exists
   file:
@@ -38,11 +42,29 @@
     state: directory
     mode: 0775
 
+- name: Configure app properties file
+  ansible.builtin.template: 
+    src: ./spark/conf/app.properties.j2
+    dest: "~/spark/conf/app.properties"
+    mode: 0775
+
+- name: Configure spark conf file
+  ansible.builtin.template: 
+    src: ./spark/conf/spark-defaults.conf.j2
+    dest: "~/spark/conf/spark-defaults.conf"
+    mode: 0775
+
+- name: Configure spark log properties file
+  ansible.builtin.template: 
+    src: ./spark/conf/log4j2.properties.j2
+    dest: "~/spark/conf/log4j2.properties"
+    mode: 0775
+
 - name: Copy Kaspacore jar file to machine
   ansible.builtin.copy:
     src: "files/{{ item }}"
     dest: "~/spark/"
-    mode: 0644
+    mode: 0755
   with_items:
     - "kaspacore.jar"
     - "GeoLite2-City.mmdb"
@@ -56,15 +78,26 @@
     owner: 185
     group: 185
 
-- name: Down compose service
-  ansible.builtin.shell: docker compose down -v
-  args:
-    chdir: ~/spark
+- name: Check if docker-compose.yaml file exists
+  ansible.builtin.stat:
+    path: ~/spark/docker-compose.yml
+  register: spark_compose_file
+
+- name: Stop the Services
+  community.docker.docker_compose:
+    docker_host: "unix:/{{ ansible_env.XDG_RUNTIME_DIR }}/docker.sock"
+    project_src: ~/spark
+    remove_orphans: true
+    remove_volumes: true
+    state: absent
+  when: spark_compose_file.stat.exists
 
 - name: Load docker image
-  ansible.builtin.shell: docker compose up -d
-  args:
-    chdir: ~/spark
+  community.docker.docker_image_load:
+    docker_host: "unix:/{{ ansible_env.XDG_RUNTIME_DIR }}/docker.sock"
+    path: "~/spark/docker_image/{{ item }}"
+  with_items:
+    - "mataelang_spark_3.3.1-scala2.13.tar"
 
 - name: Pause for 1 minute to build app cache
   ansible.builtin.pause:
@@ -76,10 +109,8 @@
   args:
     chdir: ~/spark
 
-- name: Execute spark-submit command
-  ansible.builtin.shell: "{{ item }}"
-  args:
-    chdir: ~/spark
-  with_items:
-    - "docker compose exec -it spark-master /opt/spark/bin/spark-submit --master spark://spark-master:7077 --class org.mataelang.kaspacore.jobs.SensorEnrichDataStreamJob --total-executor-cores 1 --conf spark.submit.deployMode=cluster --conf spark.executor.cores=1 --conf spark.executor.memory=1g file:///opt/spark/jars/kaspacore.jar"
-    - "docker compose exec -it spark-master /opt/spark/bin/spark-submit --master spark://spark-master:7077 --class org.mataelang.kaspacore.jobs.SensorAggregationStreamJob --total-executor-cores 5 --conf spark.submit.deployMode=cluster --conf spark.executor.cores=1 --conf spark.executor.memory=1g file:///opt/spark/jars/kaspacore.jar"
+- name: Running the Services
+  community.docker.docker_compose:
+    docker_host: "unix:/{{ ansible_env.XDG_RUNTIME_DIR }}/docker.sock"
+    project_src: ~/spark
+    state: present

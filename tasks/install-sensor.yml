@@ -15,30 +15,45 @@
   ansible.builtin.copy:
     src: "files/docker_images/{{ item }}"
     dest: "~/sensor/docker_image/"
-    mode: 0644
-  with_items:
-    - "mataelang_snort3-parser.tar"
-    - "mataelang_snort-base_3.tar"
+    mode: 0775
+  with_items: "{{ sensor_image_filenames }}"
 
-- name: Load docker image
-  ansible.builtin.shell: docker load -i {{ item }}
-  args:
-    chdir: ~/sensor/docker_image
-  with_items:
-    - "mataelang_snort3-parser.tar"
-    - "mataelang_snort-base_3.tar"
+- name: Load Docker Images
+  community.docker.docker_image_load:
+    docker_host: "unix:/{{ ansible_env.XDG_RUNTIME_DIR }}/docker.sock"
+    path: "~/sensor/docker_image/{{ item }}"
+  with_items: "{{ sensor_image_filenames }}"
 
 - name: Configure docker-compose environment
   ansible.builtin.template: 
     src: ./sensor/docker-compose.yml.j2
     dest: "~/sensor/docker-compose.yml"
-    mode: 0755
+    mode: 0775
 
 - name: Ensure Snort directory exists
   file:
     path: "~/sensor/snort"
     state: directory
     mode: 0775
+
+- name: Cleanup Docker image tar
+  ansible.builtin.file:
+    path: "files/docker_images/{{ sensor_image_filenames }}"
+    state: absent
+
+- name: Check if docker-compose.yaml file exists
+  ansible.builtin.stat:
+    path: ~/sensor/docker-compose.yml
+  register: sensor_compose_file
+
+- name: Stop the Services
+  community.docker.docker_compose:
+    docker_host: "unix:/{{ ansible_env.XDG_RUNTIME_DIR }}/docker.sock"
+    project_src: ~/sensor
+    remove_orphans: true
+    remove_volumes: true
+    state: absent
+  when: sensor_compose_file.stat.exists
 
 - name: Configure Dockerfile environment
   ansible.builtin.template:
@@ -65,10 +80,10 @@
     src: ./sensor/snort/start.sh.j2
     dest: "~/sensor/snort/start.sh"
 
-- name: Deploy Docker Compose stack
+- name: Running the Services
   community.docker.docker_compose:
-    project_src: "~/sensor"
+    docker_host: "unix:/{{ ansible_env.XDG_RUNTIME_DIR }}/docker.sock"
+    project_src: ~/sensor
+    state: present
     build: true
     remove_orphans: true
-    files:
-    - docker-compose.yml

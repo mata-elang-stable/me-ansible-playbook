@@ -26,6 +26,7 @@ url_list=(
     http://security.ubuntu.com/ubuntu/pool/main/p/python3-stdlib-extensions/python3-distutils_3.8.10-0ubuntu1~20.04_all.deb
     http://archive.ubuntu.com/ubuntu/pool/universe/w/wheel/python3-wheel_0.34.2-1_all.deb
     http://security.ubuntu.com/ubuntu/pool/universe/p/python-pip/python3-pip_20.0.2-5ubuntu1.5_all.deb
+    https://snort.org/downloads/community/snort3-community-rules.tar.gz
 )
 
 # Prepare Docker Images

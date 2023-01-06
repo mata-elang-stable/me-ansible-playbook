@@ -21,7 +21,7 @@
 
 -- HOME_NET and EXTERNAL_NET must be set now
 -- setup the network addresses you are protecting
-HOME_NET = {{ sensor_home_net }}
+HOME_NET = '{{ sensor_home_net }}'
 
 -- set up the external network addresses.
 -- (leave as "any" in most situations)
@@ -107,9 +107,10 @@ reputation =
     -- configure one or both of these, then uncomment reputation
     -- (see also related path vars at the top of snort_defaults.lua)
 
-    --blacklist = 'blacklist file name with ip lists'
+    blacklist = BLACK_LIST_PATH ..'default.blocklist',
     --whitelist = 'whitelist file name with ip lists'
 }
+
 --]]
 
 ---------------------------------------------------------------------------

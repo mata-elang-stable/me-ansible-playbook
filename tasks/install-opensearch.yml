@@ -27,7 +27,6 @@
 
 - name: Load Docker Images
   community.docker.docker_image_load:
-    docker_host: "unix:/{{ ansible_env.XDG_RUNTIME_DIR }}/docker.sock"
     path: "~/opensearch/docker_image/{{ item }}"
     timeout: 120
   with_items: "{{ opensearch_image_filenames }}"
@@ -45,7 +44,6 @@
 
 - name: Stop the Services
   community.docker.docker_compose:
-    docker_host: "unix:/{{ ansible_env.XDG_RUNTIME_DIR }}/docker.sock"
     project_src: ~/opensearch
     remove_orphans: true
     remove_volumes: true
@@ -66,6 +64,5 @@
 
 - name: Run the Services
   community.docker.docker_compose:
-    docker_host: "unix:/{{ ansible_env.XDG_RUNTIME_DIR }}/docker.sock"
     project_src: ~/opensearch
     state: present

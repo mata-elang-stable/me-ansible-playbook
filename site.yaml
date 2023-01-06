@@ -19,14 +19,14 @@
       community.general.timezone:
         name: "{{ timezone }}"
 
-    - name: Check if Docker rootless already installed
+    - name: Check if Docker rootfull already installed
       ansible.builtin.stat:
-        path: ~/bin/docker
+        path: /usr/bin/docker
       register: docker_command_exists
 
     - name: Install Docker Binary
       ansible.builtin.include_tasks:
-        file: tasks/install-docker-rootless.yml
+        file: tasks/install-docker-rootfull.yml
       when: not docker_command_exists.stat.exists and
         ('docker-ce' not in ansible_facts.packages or 'docker' not in ansible_facts.packages)
 
@@ -117,7 +117,6 @@
 
     - name: Get opensearch container facts
       community.docker.docker_container_info:
-        docker_host: "unix:/{{ ansible_env.XDG_RUNTIME_DIR }}/docker.sock"
         name: opensearch-node1
       register: opensearch_facts
 

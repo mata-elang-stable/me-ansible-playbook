@@ -4,10 +4,9 @@ timezone: Asia/Jakarta
 
 # Sensor
 sensor_max_pcap_files: 5
-# Sensor ruleset option: community, registered, lightspd
-sensor_ruleset: community
-snort_local_rules: {}
-  # - 'alert icmp any any -> any any (msg:"ICMP test detected"; gid:1; sid:10000001; rev:001; classtype:icmp-event;)'
+sensor_snort_rule_filename: snort3-community-rules.tar.gz
+snort_local_rules:
+  - 'alert icmp any any -> any any (msg:"ICMP test detected"; gid:1; sid:10000001; rev:001; classtype:icmp-event;)'
 
 # Mosquitto
 mosquitto_image_name: eclipse-mosquitto:2.0.15

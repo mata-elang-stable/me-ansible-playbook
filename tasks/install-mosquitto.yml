@@ -19,7 +19,6 @@
 
 - name: Load Docker Images
   community.docker.docker_image_load:
-    docker_host: "unix:/{{ ansible_env.XDG_RUNTIME_DIR }}/docker.sock"
     path: "~/mosquitto/docker_image/{{ mosquitto_image_filename }}"
     timeout: 120
 
@@ -35,7 +34,6 @@
 
 - name: Stop the Services
   community.docker.docker_compose:
-    docker_host: "unix:/{{ ansible_env.XDG_RUNTIME_DIR }}/docker.sock"
     project_src: ~/mosquitto
     remove_orphans: true
     remove_volumes: true
@@ -50,7 +48,6 @@
 
 - name: Configure mosquitto user password
   community.docker.docker_container:
-    docker_host: "unix:/{{ ansible_env.XDG_RUNTIME_DIR }}/docker.sock"
     name: mosquitto-passwd
     image: eclipse-mosquitto:2.0.15
     detach: false
@@ -67,7 +64,6 @@
 
 - name: Remove old container
   community.docker.docker_container:
-    docker_host: "unix:/{{ ansible_env.XDG_RUNTIME_DIR }}/docker.sock"
     name: mosquitto-passwd
     state: absent
 
@@ -79,6 +75,5 @@
 
 - name: Run the Services
   community.docker.docker_compose:
-    docker_host: "unix:/{{ ansible_env.XDG_RUNTIME_DIR }}/docker.sock"
     project_src: ~/mosquitto
     state: present

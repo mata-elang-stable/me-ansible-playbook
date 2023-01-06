@@ -1,53 +1,147 @@
 ---
-- name: Install Mata Elang Platform
+- name: Preparing Mata Elang Host
   hosts: all
   gather_facts: true
   vars_files:
     - defaults/main.yml
-  pre_tasks:
+    - vars/main.yml
+  handlers:
+    - name: Import handlers
+      ansible.builtin.import_tasks:
+        file: handlers/main.yml
+  tasks:
     - name: Gather the package facts
       ansible.builtin.package_facts:
         manager: apt
+
     - name: Set Timezone to local
       become: true
       community.general.timezone:
         name: "{{ timezone }}"
+
     - name: Check if Docker rootless already installed
       ansible.builtin.stat:
         path: ~/bin/docker
       register: docker_command_exists
+
     - name: Install Docker Binary
-      ansible.builtin.import_tasks:
+      ansible.builtin.include_tasks:
         file: tasks/install-docker-rootless.yml
       when: not docker_command_exists.stat.exists and
-            ('docker-ce' not in ansible_facts.packages or 'docker' not in ansible_facts.packages)
+        ('docker-ce' not in ansible_facts.packages or 'docker' not in ansible_facts.packages)
+
+- name: "Mata Elang: Install Mosquitto"
+  hosts: mosquitto
+  gather_facts: true
+  vars_files:
+    - defaults/main.yml
+    - vars/main.yml
   tasks:
-    - name: Install Mosquitto
-      ansible.builtin.import_tasks:
+    - name: Check if docker-compose.yml file already exists
+      ansible.builtin.stat:
+        path: ~/mosquitto/docker-compose.yml
+      register: mosquitto_compose_file
+
+    - name: Include install-mosquitto.yml
+      ansible.builtin.include_tasks:
         file: tasks/install-mosquitto.yml
-      when: inventory_hostname in groups['mosquitto']
+      when: not mosquitto_compose_file.stat.exists or (force is defined and force is true)
 
-    - name: Install Kafka
-      ansible.builtin.import_tasks:
+- name: "Mata Elang: Install Kafka"
+  hosts: kafka
+  gather_facts: true
+  vars_files:
+    - defaults/main.yml
+    - vars/main.yml
+  tasks:
+    - name: Check if docker-compose.yml file already exists
+      ansible.builtin.stat:
+        path: ~/kafka/docker-compose.yml
+      register: kafka_compose_file
+
+    - name: Include install-kafka.yml
+      ansible.builtin.include_tasks:
         file: tasks/install-kafka.yml
-      when: inventory_hostname in groups['kafka']
+      when: not kafka_compose_file.stat.exists or (force is defined and force is true)
 
-    - name: Install Hadoop
-      ansible.builtin.import_tasks:
+- name: "Mata Elang: Install Hadoop"
+  hosts: hadoop
+  gather_facts: true
+  vars_files:
+    - defaults/main.yml
+    - vars/main.yml
+  tasks:
+    - name: Check if hadoop folder already exists
+      ansible.builtin.stat:
+        path: ~/hadoop/bin/hdfs
+      register: hadoop_compose_file
+
+    - name: Include install-hadoop.yml
+      ansible.builtin.include_tasks:
         file: tasks/install-hadoop.yml
-      when: inventory_hostname in groups['hadoop']
+      when: not hadoop_compose_file.stat.exists or (force is defined and force is true)
 
-    - name: Install Spark
-      ansible.builtin.import_tasks:
+- name: "Mata Elang: Install Spark"
+  hosts: spark
+  gather_facts: true
+  vars_files:
+    - defaults/main.yml
+    - vars/main.yml
+  tasks:
+    - name: Check if docker-compose.yml file already exists
+      ansible.builtin.stat:
+        path: ~/spark/docker-compose.yml
+      register: spark_compose_file
+
+    - name: Include install-spark.yml
+      ansible.builtin.include_tasks:
         file: tasks/install-spark.yml
-      when: inventory_hostname in groups['spark']
+      when: not spark_compose_file.stat.exists or (force is defined and force is true)
 
-    - name: Install OpenSearch
-      ansible.builtin.import_tasks:
+- name: "Mata Elang: Install OpenSearch"
+  hosts: opensearch
+  gather_facts: true
+  vars_files:
+    - defaults/main.yml
+    - vars/main.yml
+  tasks:
+    - name: Check if docker-compose.yml file already exists
+      ansible.builtin.stat:
+        path: ~/opensearch/docker-compose.yml
+      register: opensearch_compose_file
+
+    - name: Include install-opensearch.yml
+      ansible.builtin.include_tasks:
         file: tasks/install-opensearch.yml
-      when: inventory_hostname in groups['opensearch']
+      when: not opensearch_compose_file.stat.exists or (force is defined and force is true)
 
-    - name: Install Sensor
-      ansible.builtin.import_tasks:
+    - name: Get opensearch container facts
+      community.docker.docker_container_info:
+        docker_host: "unix:/{{ ansible_env.XDG_RUNTIME_DIR }}/docker.sock"
+        name: opensearch-node1
+      register: opensearch_facts
+
+    - name: Ensure OpenSearch running healthy
+      ansible.builtin.uri:
+        url: "http://{{ opensearch_facts.container.NetworkSettings.IPAddress }}:9200/_cluster/health?wait_for_status=yellow&timeout=50s"
+      register: opensearch_healthcheck
+      until: "opensearch_healthcheck == 200"
+      retries: 5
+      delay: 10
+
+- name: "Mata Elang: Install Sensor"
+  hosts: sensor
+  gather_facts: true
+  vars_files:
+    - defaults/main.yml
+    - vars/main.yml
+  tasks:
+    - name: Check if docker-compose.yml file already exists
+      ansible.builtin.stat:
+        path: ~/sensor/docker-compose.yml
+      register: sensor_compose_file
+
+    - name: Include install-sensor.yml
+      ansible.builtin.include_tasks:
         file: tasks/install-sensor.yml
-      when: inventory_hostname in groups['sensor']
+      when: not sensor_compose_file.stat.exists or (force is defined and force is true)

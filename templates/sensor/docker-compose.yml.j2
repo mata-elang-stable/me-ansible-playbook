@@ -1,5 +1,8 @@
 version: "3.8"
 
+volumes:
+  snort_data:
+
 services:
   snort:
     build: 
@@ -21,16 +24,18 @@ services:
           memory: 256M
 
   snort-parser:
-    image: {{me_sensor_snort_parser_image}}
+    image: {{ me_sensor_snort_parser_image }}
     depends_on:
       - snort
     restart: always
     environment:
-      - MQTT_HOST={{sensor_mqtt_host}}
-      - MQTT_PORT=1883
-      - MQTT_USERNAME={{sensor_mqtt_username}}
-      - MQTT_PASSWORD={{sensor_mqtt_password}}
-      - MQTT_TOPIC=mataelang/sensor/v3/<machine-id>
+      - MQTT_HOST={{ mosquitto_host }}
+      - MQTT_PORT={{ mosquitto_port }}
+      - MQTT_USERNAME={{ mosquitto_username }}
+      - MQTT_PASSWORD={{ mosquitto_password }}
+      - MAX_PCAP_FILES={{ sensor_max_pcap_files }}
+      - SENSOR_ID={{ sensor_id }}
+      - MQTT_TOPIC=mataelang/sensor/v3/<sensor-id>
       - SNORT_ALERT_FILE_PATH=/var/log/snort/alert_json.txt
     volumes:
       - /etc/machine-id:/etc/machine-id:ro
@@ -43,5 +48,3 @@ services:
         reservations:
           cpus: '0.15'
           memory: 15M
-volumes:
-  snort_data:

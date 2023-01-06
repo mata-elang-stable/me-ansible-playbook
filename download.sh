@@ -36,7 +36,7 @@ image_list=(
     confluentinc/cp-kafka:7.3.0
     provectuslabs/kafka-ui
     mataelang/snort-base:3.1.47.0-alpine-3
-    docker pull mataelang/snort3-parser:1.1
+    mataelang/snort3-parser:1.1
     mataelang/spark:3.3.1-scala2.13
     opensearchproject/opensearch:2.4.0
     opensearchproject/opensearch-dashboards:2.4.0
@@ -48,7 +48,7 @@ do_download() {
     if test -f "files/$filename"; then
         return
     fi
-    echo "=> Processing $filename"
+    echo "=> Downloading $filename"
     wget -q --show-progress --progress=bar:force -O "files/$filename" "$1"
 }
 
@@ -57,7 +57,7 @@ do_docker_save() {
     if test -f "$tar_filename"; then
         return
     fi
-    echo "=> Processing $1"
+    echo "=> Downloading $1"
     docker pull -q "$1"
     docker save -o "$tar_filename" "$1"
 }

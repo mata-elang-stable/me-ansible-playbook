@@ -16,7 +16,7 @@ x-spark-default:
 services:
   spark-master:
     <<: *spark-default
-    image: mataelang/spark:3.3.1-scala2.13
+    image: {{ spark_image }}
     ports:
       - "8080:8080"
     environment:
@@ -40,12 +40,9 @@ services:
 
   spark-worker:
     <<: *spark-default
-    image: mataelang/spark:3.3.1-scala2.13
+    image: {{ spark_image }}
     depends_on:
       - spark-master
-    # ports:
-    #   - "8181-8182:8081"
-    #   - "4041-4042:4040"
     environment:
       <<: *spark-default-env
       SPARK_MASTER: spark://spark-master:7077
@@ -60,12 +57,9 @@ services:
     
   spark-worker-bigmemory:
     <<: *spark-default
-    image: mataelang/spark:3.3.1-scala2.13
+    image: {{ spark_image }}
     depends_on:
       - spark-master
-    # ports:
-    #   - "8183-8184:8081"
-    #   - "4043-4044:4040"
     environment:
       <<: *spark-default-env
       SPARK_MASTER: spark://spark-master:7077
@@ -80,7 +74,7 @@ services:
 
   spark-historyserver:
     <<: *spark-default
-    image: mataelang/spark:3.3.1-scala2.13
+    image: {{ spark_image }}
     depends_on:
       - spark-master
     ports:
@@ -106,7 +100,7 @@ services:
 
   spark-submit-enrich:
     <<: *spark-default
-    image: mataelang/spark:3.3.1-scala2.13
+    image: {{ spark_image }}
     restart: "no"
     depends_on:
       - spark-master
@@ -116,7 +110,7 @@ services:
       <<: *spark-default-env
       SPARK_MASTER_HOST: spark-master
       SPARK_MASTER_PORT: 7077
-      DEPLOY_MODE: client
+      DEPLOY_MODE: cluster
       TOTAL_EXECUTOR_CORES: 1
       SPARK_DRIVER_MEMORY: 1g
       SPARK_EXECUTOR_CORES: 1
@@ -137,7 +131,7 @@ services:
 
   spark-submit-aggr:
     <<: *spark-default
-    image: mataelang/spark:3.3.1-scala2.13
+    image: {{ spark_image }}
     restart: "no"
     depends_on:
       - spark-master
@@ -147,7 +141,7 @@ services:
       <<: *spark-default-env
       SPARK_MASTER_HOST: spark-master
       SPARK_MASTER_PORT: 7077
-      DEPLOY_MODE: client
+      DEPLOY_MODE: cluster
       TOTAL_EXECUTOR_CORES: 1
       SPARK_DRIVER_MEMORY: 2g
       SPARK_EXECUTOR_CORES: 1

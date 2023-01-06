@@ -1,14 +1,13 @@
-SPARK_MASTER={{spark_master}}
-SPARK_CHECKPOINT_PATH={{spark_checkpoint_path}}
+SPARK_MASTER=spark://spark-master:7077
+SPARK_CHECKPOINT_PATH={{ hadoop_home_url }}/kafka-checkpoint
 TIMEZONE=UTC
 
-KAFKA_BOOTSTRAP_SERVERS={{spark_kafka_server}}
-KAFKA_INPUT_STARTING_OFFSETS=latest
+KAFKA_BOOTSTRAP_SERVERS={{ kafka_listen_ip }}:{{ kafka_listen_port }}
 
-SENSOR_STREAM_INPUT_TOPIC={{spark_input_topic}}
-SENSOR_STREAM_OUTPUT_TOPIC={{spark_output_topic}}
+SENSOR_STREAM_INPUT_TOPIC={{ kafka_sensor_events_topic }}
+SENSOR_STREAM_OUTPUT_TOPIC={{ kafka_enriched_sensor_events_topic }}
 
-MAXMIND_DB_PATH={{maxmind_db_path}}
-MAXMIND_DB_FILENAME={{maxmind_db_filename}}
+MAXMIND_DB_PATH={{ hadoop_home_url }}/kaspacore/files/{{ maxmind_db_filename }}
+MAXMIND_DB_FILENAME={{ maxmind_db_filename }}
 
 LOG_LEVEL=DEBUG

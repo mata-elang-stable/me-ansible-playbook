@@ -1,11 +1,10 @@
 # Which Snort/Talos rulesets do you want to download (recomended: choose only one)
-community_ruleset = false
-registered_ruleset = false
-LightSPD_ruleset = false
+community_ruleset = {% 'true' if sensor_ruleset == 'community' else 'false' %}
+registered_ruleset = {% 'true' if sensor_ruleset == 'registered' else 'false' %}
+LightSPD_ruleset = {% 'true' if sensor_ruleset == 'lightspd' else 'false' %}
 
 # Your Snort oinkcode is required for snort/talos Subscription, Light_SPD, and Registered rulesets
-oinkcode = {{sensor_oinkcode}}
-
+oinkcode = {{ sensor_oinkcode }}
 
 # which blocklists to download
 snort_blocklist = true
@@ -29,8 +28,7 @@ blocklist_path = /usr/local/etc/lists/default.blocklist
 snort_path = /usr/local/bin/snort
 
 # Which version of snort are you running (optional, not usually needed.). This version will over-rule snort_path
-#snort_version = 3.1.39.0
-snort_version = 3.1.35.0
+snort_version = 3.1.47.0
 
 # Where is the PID file for your running snort process/daemon (required to tell snort to reload the
 # new rules after rules are modified) This is optional, but recomended.

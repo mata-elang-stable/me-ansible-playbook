@@ -1,7 +1,9 @@
 [all:vars]
+sensor_oinkcode: xxxxxxx
 ansible_ssh_user=username
 ansible_ssh_password=password
 ansible_become_password=password
+force=False
 
 [mosquitto]
 192.168.59.103
@@ -19,4 +21,5 @@ ansible_become_password=password
 192.168.59.103
 
 [sensor]
-192.168.59.103 sensor_network_interface=enp0s8
+192.168.59.103 sensor_id=sensor1 sensor_network_interface=enp0s8 sensor_home_net=192.168.59.0/24
+192.168.60.103 sensor_network_interface=enp0s8 sensor_home_net=192.168.60.0/24

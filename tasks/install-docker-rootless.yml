@@ -4,30 +4,25 @@
   ansible.builtin.lineinfile:
     dest: ~/.bashrc
     state: present
-    # backrefs: true
-    line: 'export PATH={{ extra_path }}:$PATH'
-    # regexp: 'PATH=(["]*)((?!.*?{{ extra_path }}).*?)(["]*)$'
-    # line: PATH=\1\2:{{ extra_path }}\3
-  vars:
-    extra_path: "{{ ansible_env.HOME }}/bin"
+    line: "export PATH={{ ansible_env.HOME }}/bin:$PATH"
 
 - name: Ensure bin directory exists in HOME directory
   ansible.builtin.file:
     path: "~/bin"
     state: directory
-    mode: 0775
+    mode: 0755
 
 - name: Ensure systemd directory exists in HOME directory
   ansible.builtin.file:
     path: "~/.config/systemd/user"
     state: directory
-    mode: 0775
+    mode: 0755
 
 - name: Ensure Docker directory exists in HOME directory
   ansible.builtin.file:
     path: "~/.docker/cli-plugins/"
     state: directory
-    mode: 0775
+    mode: 0755
 
 - name: Configure sysctl
   become: true
@@ -39,11 +34,30 @@
     - { key: "kernel.unprivileged_userns_clone", value: 1 }
     - { key: "user.max_user_namespaces", value: 28633 }
 
+- name: Configure Kernel cgroup swap limit capabilities
+  become: true
+  notify: Reboot host
+  block:
+    - name: Set cgroup_enable to memory
+      ansible.builtin.lineinfile:
+        dest: /etc/default/grub
+        state: present
+        backrefs: true
+        regexp: '^(GRUB_CMDLINE_LINUX=(?!.* cgroup_enable)\"[^\"]*)(\".*)'
+        line: '\1 cgroup_enable=memory\2'
+    - name: Enable swapaccount
+      ansible.builtin.lineinfile:
+        dest: /etc/default/grub
+        state: present
+        backrefs: true
+        regexp: '^(GRUB_CMDLINE_LINUX=(?!.* swapaccount)\"[^\"]*)(\".*)'
+        line: '\1 swapaccount=1\2'
+
 - name: Copy Docker Binary Archive
   ansible.builtin.copy:
     src: "files/{{ item.src }}"
     dest: "{{ item.dest }}"
-    mode: 0775
+    mode: 0755
   with_items:
     - { src: "{{ docker_archive_filename }}", dest: "/tmp/" }
     - { src: "{{ docker_rootless_archive_filename }}", dest: "/tmp/" }
@@ -53,7 +67,7 @@
   ansible.builtin.copy:
     src: "files/{{ item }}"
     dest: "/tmp/"
-    mode: 0775
+    mode: 0755
   with_items:
     - "{{ docker_required_deb_packages_filename }}"
     - "{{ python3_required_libs_filename }}"
@@ -97,7 +111,7 @@
   ansible.builtin.copy:
     src: "files/{{ docker_compose_plugin_archive_filename }}"
     dest: "~/.docker/cli-plugins/docker-compose"
-    mode: 0775
+    mode: 0755
 
 - name: Add Docker DOCKER_HOST variable to bashrc file
   ansible.builtin.lineinfile:

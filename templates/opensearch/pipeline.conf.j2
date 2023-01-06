@@ -1,6 +1,6 @@
 input {
    kafka {
-     bootstrap_servers => "{{ groups['kafka'][0] }}:9093"
+     bootstrap_servers => "{{ kafka_listen_ip }}:{{ kafka_listen_port }}"
      topics => "event_all_10s"
    }
  }
@@ -12,7 +12,7 @@ filter {
 }
  output {
    opensearch {
-     hosts => ["https://opensearch-node1:9200", "https://opensearch-node2:9200"]
+     hosts => ["https://opensearch-node1:9200"]
      index => "event-all-10s-%{+YYYY.MM.dd}"
      user => "admin"
      password => "admin"

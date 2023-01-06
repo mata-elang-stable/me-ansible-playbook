@@ -1,21 +1,21 @@
 ---
 - name: Ensure Spark directory exists
-  file:
+  ansible.builtin.file:
     path: "~/spark"
     state: directory
-    mode: 0775
+    mode: 0755
 
 - name: Ensure Spark docker image dir exists
-  file:
+  ansible.builtin.file:
     path: "~/spark/docker_image"
     state: directory
-    mode: 0775
+    mode: 0755
 
 - name: Copy docker image Spark related files to machine
   ansible.builtin.copy:
     src: "files/docker_images/{{ item }}"
     dest: "~/spark/docker_image/"
-    mode: 0775
+    mode: 0755
   with_items: "{{ spark_image_filename }}"
 
 - name: Load docker image
@@ -24,59 +24,41 @@
     path: "~/spark/docker_image/{{ item }}"
   with_items: "{{ spark_image_filename }}"
 
-- name: Configure docker-compose environment
-  ansible.builtin.template: 
-    src: ./spark/docker-compose.yml.j2
-    dest: "~/spark/docker-compose.yml"
-    mode: 0775
+- name: Cleanup Docker image tar
+  ansible.builtin.file:
+    path: "~/spark/docker_image/{{ item }}"
+    state: absent
+  with_items: "{{ spark_image_filename }}"
 
 - name: Configure environment file
-  ansible.builtin.template: 
+  ansible.builtin.template:
     src: ./spark/.env.j2
     dest: "~/spark/.env"
-    mode: 0775
+    mode: 0755
 
 - name: Ensure Conf directory exists
-  file:
+  ansible.builtin.file:
     path: "~/spark/conf"
     state: directory
-    mode: 0775
+    mode: 0755
 
 - name: Configure app properties file
-  ansible.builtin.template: 
+  ansible.builtin.template:
     src: ./spark/conf/app.properties.j2
     dest: "~/spark/conf/app.properties"
-    mode: 0775
+    mode: 0755
 
 - name: Configure spark conf file
-  ansible.builtin.template: 
+  ansible.builtin.template:
     src: ./spark/conf/spark-defaults.conf.j2
     dest: "~/spark/conf/spark-defaults.conf"
-    mode: 0775
+    mode: 0755
 
 - name: Configure spark log properties file
-  ansible.builtin.template: 
+  ansible.builtin.template:
     src: ./spark/conf/log4j2.properties.j2
     dest: "~/spark/conf/log4j2.properties"
-    mode: 0775
-
-- name: Copy Kaspacore jar file to machine
-  ansible.builtin.copy:
-    src: "files/{{ item }}"
-    dest: "~/spark/"
     mode: 0755
-  with_items:
-    - "kaspacore.jar"
-    - "GeoLite2-City.mmdb"
-
-- name: Ensure Kaspacore Checkpoint directory exists
-  become: true
-  file:
-    path: "~/spark/kafka-checkpoint"
-    state: directory
-    mode: 0775
-    owner: 185
-    group: 185
 
 - name: Check if docker-compose.yaml file exists
   ansible.builtin.stat:
@@ -92,24 +74,13 @@
     state: absent
   when: spark_compose_file.stat.exists
 
-- name: Load docker image
-  community.docker.docker_image_load:
-    docker_host: "unix:/{{ ansible_env.XDG_RUNTIME_DIR }}/docker.sock"
-    path: "~/spark/docker_image/{{ item }}"
-  with_items:
-    - "mataelang_spark_3.3.1-scala2.13.tar"
+- name: Configure docker-compose environment
+  ansible.builtin.template:
+    src: ./spark/docker-compose.yml.j2
+    dest: "~/spark/docker-compose.yml"
+    mode: 0755
 
-- name: Pause for 1 minute to build app cache
-  ansible.builtin.pause:
-    minutes: 1
-
-- name: Change owner of kafka-checkpoint directory
-  become: true
-  ansible.builtin.shell: chown -R 185:185 kafka-checkpoint
-  args:
-    chdir: ~/spark
-
-- name: Running the Services
+- name: Run the Services
   community.docker.docker_compose:
     docker_host: "unix:/{{ ansible_env.XDG_RUNTIME_DIR }}/docker.sock"
     project_src: ~/spark

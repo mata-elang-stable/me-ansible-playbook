@@ -1,15 +1,52 @@
 ---
-# defaults file for mata-elang-ansible
-me_sensor_snort_parser_image: mataelang/snort3-parser:1.1
-sensor_network_interface: enp0s8
-sensor_oinkcode: xxxxxxx
-sensor_home_net: 192.168.8.0/24
-sensor_mqtt_host: 192.168.8.xxx
-sensor_mqtt_username: ""
-sensor_mqtt_password: ""
+# Global
 timezone: Asia/Jakarta
 
-# archive
+# Sensor
+sensor_max_pcap_files: 5
+# Sensor ruleset option: community, registered, lightspd
+sensor_ruleset: community
+snort_local_rules: {}
+  # - 'alert icmp any any -> any any (msg:"ICMP test detected"; gid:1; sid:10000001; rev:001; classtype:icmp-event;)'
+
+# Mosquitto
+mosquitto_image_name: eclipse-mosquitto:2.0.15
+mosquitto_host: "{{ groups['mosquitto'][0] }}"
+mosquitto_port: 1883
+mosquitto_username: mataelang
+mosquitto_password: mataelang
+mosquitto_topic: mataelang/sensor/v3/+
+mosquitto_configs: {
+  listener: "{{ mosquitto_port }}",
+  allow_anonymous: "false",
+  persistence: "true",
+  persistence_location: /mosquitto/data/,
+  autosave_interval: 60,
+  queue_qos0_messages: "true",
+  max_queued_messages: 100000,
+  max_inflight_messages: 10000,
+  connection_messages: "true",
+  log_dest: stdout,
+  persistent_client_expiration: "1h",
+  password_file: /mosquitto/config/password_file
+}
+
+# Kafka
+kafka_listen_ip: "{{ groups['kafka'][0] }}"
+kafka_listen_port: 9093
+kafka_sensor_events_topic: sensor_events
+kafka_enriched_sensor_events_topic: sensor_events_with_geoip
+
+# hadoop
+hadoop_listen_ip: "{{ groups['hadoop'][0] }}"
+hadoop_listen_port: 9000
+hadoop_home_url: "hdfs://{{ hadoop_listen_ip }}:{{ hadoop_listen_port }}/user/{{ ansible_ssh_user }}"
+
+# spark
+maxmind_db_filename: GeoLite2-City.mmdb
+kaspacore_jar_filename: kaspacore.jar
+
+# Archive
 # Docker static binary URL: https://download.docker.com/linux/static/stable/x86_64/
 docker_archive_filename: docker-20.10.9.tgz
 docker_rootless_archive_filename: docker-rootless-extras-20.10.9.tgz
@@ -17,6 +54,8 @@ docker_rootless_archive_filename: docker-rootless-extras-20.10.9.tgz
 docker_compose_plugin_archive_filename: docker-compose-linux-x86_64
 hadoop_archive_filename: hadoop-3.3.4.tar.gz
 jdk_archive_filename: amazon-corretto-11-x64-linux-jdk.tar.gz
+mosquitto_image_filename: eclipse-mosquitto_2.0.15.tar
+spark_image_filename: mataelang_spark_3.3.1-scala2.13.tar
 
 docker_required_deb_packages_filename:
   - python-pip-whl_20.0.2-5ubuntu1.5_all.deb
@@ -41,81 +80,30 @@ python3_required_libs_filename:
   - docker-6.0.1-py3-none-any.whl
   - docker_compose-1.29.2-py2.py3-none-any.whl
 
-mosquitto_image_filename: eclipse-mosquitto_2.0.15.tar
 kafka_image_filenames:
   - confluentinc_cp-kafka_7.3.0.tar
   - confluentinc_cp-zookeeper_7.3.0.tar
   - mataelang_kafka-mqtt-source_1.1.tar
   - provectuslabs_kafka-ui.tar
   - eclipse-mosquitto_2.0.15.tar
+
 sensor_image_filenames:
   - "mataelang_snort3-parser_1.1.tar"
   - "mataelang_snort-base_3.1.47.0-alpine-3.tar"
-spark_image_filename: mataelang_spark_3.3.1-scala2.13.tar
+
 opensearch_image_filenames:
   - "opensearchproject_logstash-oss-with-opensearch-output-plugin_8.4.0.tar"
   - "opensearchproject_opensearch-dashboards_2.4.0.tar"
   - "opensearchproject_opensearch_2.4.0.tar"
 
-
-# sensor
-snort_local_rules: {}
-  # - 'alert icmp any any -> any any (msg:"ICMP test detected"; gid:1; sid:10000001; rev:001; classtype:icmp-event;)'
-
-# install mosquitto
-mosquitto_image_name: eclipse-mosquitto:2.0.15
-mosquitto_username: mataelang
-mosquitto_password: mataelang
-mosquitto_configs: {
-  listener: 1883,
-  allow_anonymous: "false",
-  persistence: "true",
-  persistence_location: /mosquitto/data/,
-  autosave_interval: 60,
-  queue_qos0_messages: "true",
-  max_queued_messages: 100000,
-  max_inflight_messages: 10000,
-  connection_messages: "true",
-  log_dest: stdout,
-  persistent_client_expiration: "1h",
-  password_file: /mosquitto/config/password_file
-}
-
-# install kafka
-kafka_cluster_name: MataElangKafkaCluster
+# Docker Image
+me_sensor_snort_parser_image: mataelang/snort3-parser:1.1
+kafka_mqtt_source: mataelang/kafka-mqtt-source:1.1
+zookeeper_image: confluentinc/cp-zookeeper:7.3.0
 kafka_image: confluentinc/cp-kafka:7.3.0
 kafka_ui_image: provectuslabs/kafka-ui
-kafka_config_advertised_listeners: "PLAINTEXT://kafka:9092,EXTERNAL://{{ groups['kafka'][0] }}:9093"
-kafka_config_listeners: CLIENT://:9092,EXTERNAL://0.0.0.0:9093
-kafka_config_security_proto: PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
-kafka_config_broker_listener: CLIENT
-
-# mqtt-source
-mqtt_image: mataelang/kafka-mqtt-source:1.1
-mqtt_host: mosquitto
-mqtt_port: 1883
-mqtt_username: ""
-mqtt_password: ""
-mqtt_topic: mataelang/sensor/v3/+
-
-# Kafka
-kafka_bootstrap_servers: kafka:9092
-kafka_topic: sensor_events
-
-# zookeeper
-zookeeper_image: confluentinc/cp-zookeeper:7.3.0
-
-# hadoop
-hadoop_listen_ip: "{{ groups['hadoop'][0] }}"
-__hadoop_listen_ip: "{{ ansible_default_ipv4.address }}"
-hadoop_version: "3.3.4"
-# haddop_listen_ip: "127.0.0.1"
-
-# spark
-spark_master: spark://spark-master:7077
-spark_checkpoint_path: "hdfs://{{ groups['hadoop'][0] }}:9000/user/{{ ansible_ssh_user }}/kafka-checkpoint"
-spark_kafka_server: 172.17.0.1:9093
-spark_input_topic: sensor_events
-spark_output_topic: sensor_events_with_geoip
-maxmind_db_path: hdfs://{{ groups['hadoop'][0] }}:9000/user/{{ ansible_ssh_user }}/kaspacore/files/GeoLite2-City.mmdb
-maxmind_db_filename: GeoLite2-City.mmdb
+sensor_snort_image: mataelang/snort-base:3.1.47.0
+spark_image: mataelang/spark:3.3.1-scala2.13
+opensearch_image: opensearchproject/opensearch:2.4.0
+opensearch_dashboard_image: opensearchproject/opensearch-dashboards:2.4.0
+opensearch_logstash_image: opensearchproject/logstash-oss-with-opensearch-output-plugin:8.4.0

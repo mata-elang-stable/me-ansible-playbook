@@ -1,28 +1,37 @@
 ---
-- name: Define hadoop_listen_ip
-  ansible.builtin.set_fact:
-    hadoop_listen_ip: "{{ __hadoop_listen_ip }}"
-  when: hadoop_listen_ip is not defined
-
 - name: Create service account for Apache Hadoop
   ansible.builtin.user:
     name: "{{ ansible_ssh_user }}"
     generate_ssh_key: true
+    ssh_key_comment: ""
 
-- name: Set authorized key taken from file
-  ansible.builtin.shell:
-    cmd: cat ~/.ssh/id_rsa.pub > ~/.ssh/authorized_keys
+- name: Get SSH Public Key of remote host
+  ansible.builtin.slurp:
+    src: ~/.ssh/id_rsa.pub
+  register: ssh_pubkey_file
+
+- name: Ensure authorized_keys file exists
+  ansible.builtin.file:
+    path: ~/.ssh/authorized_keys
+    state: touch
+    mode: 0600
+
+- name: Ensure SSH Public Key exists in authorized_keys
+  ansible.builtin.lineinfile:
+    dest: ~/.ssh/authorized_keys
+    state: present
+    line: "{{ ssh_pubkey_file['content'] | b64decode }}"
 
 - name: Copy JDK Archive
   ansible.builtin.copy:
     src: "files/{{ jdk_archive_filename }}"
     dest: "/tmp/"
-    mode: 0775
+    mode: 0755
 
 - name: Ensure jdk directory exists
   ansible.builtin.file:
     path: "{{ item }}"
-    mode: 0775
+    mode: 0755
     state: directory
   with_items:
     - "{{ ansible_env.HOME }}/jdk"
@@ -40,7 +49,7 @@
   ansible.builtin.copy:
     src: "files/{{ hadoop_archive_filename }}"
     dest: "/tmp/"
-    mode: 0775
+    mode: 0755
 
 - name: Extract Hadoop distribution
   ansible.builtin.unarchive:
@@ -54,23 +63,26 @@
   ansible.builtin.template:
     src: "./hadoop/hadoop-env.sh.j2"
     dest: "{{ ansible_env.HOME }}/hadoop/etc/hadoop/hadoop-env.sh"
-    mode: 0775
+    mode: 0755
 
 - name: Configure core-site.xml file
   ansible.builtin.template:
     src: "./hadoop/core-site.xml.j2"
     dest: "{{ ansible_env.HOME }}/hadoop/etc/hadoop/core-site.xml"
-    mode: 0775
+    mode: 0755
 
 - name: Configure hdfs-site.xml file
   ansible.builtin.template:
     src: "./hadoop/hdfs-site.xml.j2"
     dest: "{{ ansible_env.HOME }}/hadoop/etc/hadoop/hdfs-site.xml"
-    mode: 0775
+    mode: 0755
 
 - name: Stop Hadoop service
-  ansible.builtin.shell:
+  ansible.builtin.command:
     cmd: "{{ ansible_env.HOME }}/hadoop/sbin/stop-dfs.sh"
+  register: stopdfs
+  changed_when: stopdfs.rc == 0
+  failed_when: stopdfs.rc != 0
 
 - name: Remove hadoop_data folder
   ansible.builtin.file:
@@ -80,47 +92,69 @@
 - name: Ensure folder logs exist
   ansible.builtin.file:
     path: "{{ ansible_env.HOME }}/hadoop/logs"
-    mode: 0775
+    mode: 0755
     state: directory
 
 - name: Format a Hadoop Namenode
-  ansible.builtin.shell:
+  ansible.builtin.command:
     cmd: "{{ ansible_env.HOME }}/hadoop/bin/hdfs namenode -format"
+  register: namenodeformat
+  changed_when: namenodeformat == 0
+  failed_when: namenodeformat.rc != 0
 
 - name: Start Hadoop service
-  ansible.builtin.shell:
+  ansible.builtin.command:
     cmd: "{{ ansible_env.HOME }}/hadoop/sbin/start-dfs.sh"
+  register: startdfs
+  changed_when: startdfs.rc == 0
+  failed_when: startdfs.rc != 0
 
 - name: Copy Kaspacore related file to machine
   ansible.builtin.copy:
     src: "files/{{ item }}"
     dest: "/tmp/"
-    mode: 775
+    mode: 0755
   with_items:
-    - "kaspacore.jar"
-    - "GeoLite2-City.mmdb"
+    - "{{ kaspacore_jar_filename }}"
+    - "{{ maxmind_db_filename }}"
 
-- name: Pause for 2 minute to wait hadoop starting up
+- name: Pause for 1 minute to wait hadoop starting up
   ansible.builtin.pause:
-    minutes: 2
+    minutes: 1
 
-- name: Create Hadoop needed directory
-  ansible.builtin.shell:
-    cmd: "{{ item }}"
+- name: Create directories in HDFS
+  ansible.builtin.command:
+    cmd: "{{ ansible_env.HOME }}/hadoop/bin/hdfs dfs -mkdir -p {{ hadoop_home_url }}/{{ item }}"
   with_items:
-    - "{{ ansible_env.HOME }}/hadoop/bin/hdfs dfs -mkdir -p hdfs://localhost:9000/user/{{ ansible_ssh_user }}/kaspa-checkpoint"
-    - "{{ ansible_env.HOME }}/hadoop/bin/hdfs dfs -mkdir -p hdfs://localhost:9000/user/{{ ansible_ssh_user }}/kaspacore/files"
-    - "{{ ansible_env.HOME }}/hadoop/bin/hdfs dfs -mkdir -p hdfs://localhost:9000/user/{{ ansible_ssh_user }}/spark/spark-events"
+    - "kafka-checkpoint"
+    - "kaspacore/files"
+    - "spark/spark-events"
+  register: hdfs_mkdir
+  changed_when: hdfs_mkdir.rc == 0
+  failed_when: hdfs_mkdir.rc != 0
 
-- name: Upload GeoLite2-City Maxmind Geo Database
-  ansible.builtin.shell:
-    cmd: "{{ item }}"
-  with_items:
-    - "{{ ansible_env.HOME }}/hadoop/bin/hdfs dfs -put /tmp/GeoLite2-City.mmdb /user/{{ ansible_ssh_user }}/kaspacore/files"
-    - "{{ ansible_env.HOME }}/hadoop/bin/hdfs dfs -put /tmp/kaspacore.jar /user/{{ ansible_ssh_user }}/kaspacore/files"
+- name: Upload Maxmind Geo Database file to HDFS
+  ansible.builtin.command:
+    cmd: |
+      {{ ansible_env.HOME }}/hadoop/bin/hdfs dfs -put /tmp/{{ maxmind_db_filename }} {{ hadoop_home_url }}/kaspacore/files
+  register: hdfs_put_geolite
+  changed_when: hdfs_put_geolite.rc == 0
+  failed_when: hdfs_put_geolite.rc != 0
+
+- name: Upload Kaspacore jar file to HDFS
+  ansible.builtin.command:
+    cmd: |
+      {{ ansible_env.HOME }}/hadoop/bin/hdfs dfs -put /tmp/{{ kaspacore_jar_filename }} {{ hadoop_home_url }}/kaspacore/files
+  register: hdfs_put_kaspacore
+  changed_when: hdfs_put_kaspacore.rc == 0
+  failed_when: hdfs_put_kaspacore.rc != 0
 
 - name: Cleanup Hadoop tar
   ansible.builtin.file:
     path: "/tmp/{{ item }}"
     state: absent
-  with_items: "{{ hadoop_archive_filename }}"
+  with_items:
+    - "{{ hadoop_archive_filename }}"
+    - "{{ jdk_archive_filename }}"
+    - "{{ kaspacore_jar_filename }}"
+    - "{{ maxmind_db_filename }}"

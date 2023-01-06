@@ -1,5 +1,4 @@
 [all:vars]
-sensor_oinkcode=xxxxxxx
 ansible_ssh_user=username
 ansible_ssh_password=password
 ansible_become_password=password

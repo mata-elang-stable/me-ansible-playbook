@@ -115,19 +115,6 @@
         file: tasks/install-opensearch.yml
       when: not opensearch_compose_file.stat.exists or (force is defined and force is true)
 
-    - name: Get opensearch container facts
-      community.docker.docker_container_info:
-        name: opensearch-node1
-      register: opensearch_facts
-
-    - name: Ensure OpenSearch running healthy
-      ansible.builtin.uri:
-        url: "http://{{ opensearch_facts.container.NetworkSettings.IPAddress }}:9200/_cluster/health?wait_for_status=yellow&timeout=50s"
-      register: opensearch_healthcheck
-      until: "opensearch_healthcheck == 200"
-      retries: 5
-      delay: 10
-
 - name: "Mata Elang: Install Sensor"
   hosts: sensor
   gather_facts: true

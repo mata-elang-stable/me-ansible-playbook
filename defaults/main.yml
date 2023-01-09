@@ -3,6 +3,7 @@
 timezone: Asia/Jakarta
 
 # Sensor
+# You can set this sensor configuration for each sensor in inventory.
 sensor_max_pcap_files: 5
 sensor_snort_rule_filename: snort3-community-rules.tar.gz
 snort_local_rules: {}

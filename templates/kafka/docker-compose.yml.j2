@@ -7,7 +7,7 @@ volumes:
 
 services:
   mqtt-source:
-    image: {{ kafka_mqtt_source }}
+    image: {{ kafka_mqtt_source_image }}
     environment:
       MQTT_HOST: {{ mosquitto_host }}
       MQTT_PORT: {{ mosquitto_port }}

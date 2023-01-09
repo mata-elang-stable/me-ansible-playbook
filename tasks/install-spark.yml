@@ -1,0 +1,84 @@
+---
+- name: Ensure Spark directory exists
+  ansible.builtin.file:
+    path: "~/spark"
+    state: directory
+    mode: 0755
+
+- name: Ensure Spark docker image dir exists
+  ansible.builtin.file:
+    path: "~/spark/docker_image"
+    state: directory
+    mode: 0755
+
+- name: Copy docker image Spark related files to machine
+  ansible.builtin.copy:
+    src: "files/docker_images/{{ item }}"
+    dest: "~/spark/docker_image/"
+    mode: 0755
+  with_items: "{{ spark_image_filename }}"
+
+- name: Load docker image
+  community.docker.docker_image_load:
+    path: "~/spark/docker_image/{{ item }}"
+  with_items: "{{ spark_image_filename }}"
+
+- name: Cleanup Docker image tar
+  ansible.builtin.file:
+    path: "~/spark/docker_image/{{ item }}"
+    state: absent
+  with_items: "{{ spark_image_filename }}"
+
+- name: Configure environment file
+  ansible.builtin.template:
+    src: ./spark/.env.j2
+    dest: "~/spark/.env"
+    mode: 0755
+
+- name: Ensure Conf directory exists
+  ansible.builtin.file:
+    path: "~/spark/conf"
+    state: directory
+    mode: 0755
+
+- name: Configure app properties file
+  ansible.builtin.template:
+    src: ./spark/conf/app.properties.j2
+    dest: "~/spark/conf/app.properties"
+    mode: 0755
+
+- name: Configure spark conf file
+  ansible.builtin.template:
+    src: ./spark/conf/spark-defaults.conf.j2
+    dest: "~/spark/conf/spark-defaults.conf"
+    mode: 0755
+
+- name: Configure spark log properties file
+  ansible.builtin.template:
+    src: ./spark/conf/log4j2.properties.j2
+    dest: "~/spark/conf/log4j2.properties"
+    mode: 0755
+
+- name: Check if docker-compose.yaml file exists
+  ansible.builtin.stat:
+    path: ~/spark/docker-compose.yml
+  register: spark_compose_file
+
+- name: Stop the Services
+  community.docker.docker_compose:
+    project_src: ~/spark
+    remove_orphans: true
+    remove_volumes: true
+    state: absent
+  when: spark_compose_file.stat.exists
+
+- name: Configure docker-compose environment
+  ansible.builtin.template:
+    src: ./spark/docker-compose.yml.j2
+    dest: "~/spark/docker-compose.yml"
+    mode: 0755
+
+- name: Run the Services
+  community.docker.docker_compose:
+    project_src: ~/spark
+    state: present

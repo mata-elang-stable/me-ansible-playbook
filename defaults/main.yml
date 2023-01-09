@@ -1,51 +1,108 @@
 ---
-# defaults file for mata-elang-ansible
-me_sensor_snort_parser_image: mataelang/snort3-parser:latest
-sensor_network_interface: enp0s8
-sensor_oinkcode: xxxxxxx
-sensor_home_net: 192.168.56.0/24
-sensor_mqtt_host: 192.168.56.101
-sensor_mqtt_username: ""
-sensor_mqtt_password: ""
+# Global
 timezone: Asia/Jakarta
 
-# archive
+# Sensor
+sensor_max_pcap_files: 5
+sensor_snort_rule_filename: snort3-community-rules.tar.gz
+snort_local_rules:
+  - 'alert icmp any any -> any any (msg:"ICMP test detected"; gid:1; sid:10000001; rev:001; classtype:icmp-event;)'
+
+# Mosquitto
+mosquitto_image_name: eclipse-mosquitto:2.0.15
+mosquitto_host: "{{ groups['mosquitto'][0] }}"
+mosquitto_port: 1883
+mosquitto_username: mataelang
+mosquitto_password: mataelang
+mosquitto_topic: mataelang/sensor/v3/+
+mosquitto_configs: {
+  listener: "{{ mosquitto_port }}",
+  allow_anonymous: "false",
+  persistence: "true",
+  persistence_location: /mosquitto/data/,
+  autosave_interval: 60,
+  queue_qos0_messages: "true",
+  max_queued_messages: 100000,
+  max_inflight_messages: 10000,
+  connection_messages: "true",
+  log_dest: stdout,
+  persistent_client_expiration: "1h",
+  password_file: /mosquitto/config/password_file
+}
+
+# Kafka
+kafka_listen_ip: "{{ groups['kafka'][0] }}"
+kafka_listen_port: 9093
+kafka_sensor_events_topic: sensor_events
+kafka_enriched_sensor_events_topic: sensor_events_with_geoip
+
+# hadoop
+hadoop_listen_ip: "{{ groups['hadoop'][0] }}"
+hadoop_listen_port: 9000
+hadoop_home_url: "hdfs://{{ hadoop_listen_ip }}:{{ hadoop_listen_port }}/user/{{ ansible_ssh_user }}"
+
+# spark
+maxmind_db_filename: GeoLite2-City.mmdb
+kaspacore_jar_filename: kaspacore.jar
+
+# Archive
+# Docker static binary URL: https://download.docker.com/linux/static/stable/x86_64/
 docker_archive_filename: docker-20.10.9.tgz
+docker_rootless_archive_filename: docker-rootless-extras-20.10.9.tgz
 # Docker compose plugin download URL: https://github.com/docker/compose/releases/download/v2.14.2/docker-compose-linux-x86_64
 docker_compose_plugin_archive_filename: docker-compose-linux-x86_64
 hadoop_archive_filename: hadoop-3.3.4.tar.gz
 jdk_archive_filename: amazon-corretto-11-x64-linux-jdk.tar.gz
+mosquitto_image_filename: eclipse-mosquitto_2.0.15.tar
+spark_image_filename: mataelang_spark_3.3.1-scala2.13.tar
 
-# sensor
-snort_local_rules:
-  - 'alert icmp any any -> any any (msg:"ICMP test detected"; gid:1; sid:10000001; rev:001; classtype:icmp-event;)'
+docker_required_deb_packages_filename:
+  - python-pip-whl_20.0.2-5ubuntu1.5_all.deb
+  - python3-distutils_3.8.10-0ubuntu1~20.04_all.deb
+  - python3-wheel_0.34.2-1_all.deb
+  - python3-pip_20.0.2-5ubuntu1.5_all.deb
+  - uidmap_4.8.1-1ubuntu5.20.04.4_amd64.deb
 
-# control-center
-kafka_cluster_name: MataElangKafkaCluster
-kafka_cluster_bootstrap_server: kafka:9092
-kafka_cluster_zookeeper: zookeeper:2181
+python3_required_libs_filename:
+  - packaging-22.0-py3-none-any.whl
+  - urllib3-1.26.13-py2.py3-none-any.whl
+  - websocket_client-0.59.0-py2.py3-none-any.whl
+  - charset_normalizer-2.1.1-py3-none-any.whl
+  - requests-2.28.1-py3-none-any.whl
+  - distro-1.8.0-py3-none-any.whl
+  - docopt-0.6.2.tar.gz
+  - texttable-1.6.7-py2.py3-none-any.whl
+  - python_dotenv-0.21.0-py3-none-any.whl
+  - bcrypt-4.0.1-cp36-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  - paramiko-2.12.0-py2.py3-none-any.whl
+  - dockerpty-0.4.1.tar.gz
+  - docker-6.0.1-py3-none-any.whl
+  - docker_compose-1.29.2-py2.py3-none-any.whl
 
-# kafka
-kafka_config_zookeper: zookeeper:2181
-config_plaintext_listener: true
-kafka_config_log_dirs: /tmp/kafka_mounts/logs
-kafka_config_advertised_listeners: CLIENT://kafka:9092,EXTERNAL://172.17.0.1:9093
-kafka_config_listeners: CLIENT://:9092,EXTERNAL://0.0.0.0:9093
-kafka_config_security_proto: CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
-kafka_config_broker_listener: CLIENT
+kafka_image_filenames:
+  - confluentinc_cp-kafka_7.3.0.tar
+  - confluentinc_cp-zookeeper_7.3.0.tar
+  - mataelang_kafka-mqtt-source_1.1.tar
+  - provectuslabs_kafka-ui.tar
+  - eclipse-mosquitto_2.0.15.tar
 
-# mqtt-source
-mqtt_host: mosquitto
-mqtt_port: 1883
-mqtt_username: ""
-mqtt_password: ""
-mqtt_topic: mataelang/sensor/v3/+
-kafka_bootstrap_servers: kafka:9092
-kafka_topic: sensor_events
+sensor_image_filenames:
+  - "mataelang_snort3-parser_1.1.tar"
+  - "mataelang_snort-base_3.1.47.0-alpine-3.tar"
 
-# zookeeper
-anonymous_login: true
+opensearch_image_filenames:
+  - "opensearchproject_logstash-oss-with-opensearch-output-plugin_8.4.0.tar"
+  - "opensearchproject_opensearch-dashboards_2.4.0.tar"
+  - "opensearchproject_opensearch_2.4.0.tar"
 
-# hadoop
-hadoop_listen_ip: "{{ groups['hadoop'][0] }}"
-hadoop_user_name: hadoop
+# Docker Image
+me_sensor_snort_parser_image: mataelang/snort3-parser:1.1
+kafka_mqtt_source: mataelang/kafka-mqtt-source:1.1
+zookeeper_image: confluentinc/cp-zookeeper:7.3.0
+kafka_image: confluentinc/cp-kafka:7.3.0
+kafka_ui_image: provectuslabs/kafka-ui
+sensor_snort_image: mataelang/snort-base:3.1.47.0
+spark_image: mataelang/spark:3.3.1-scala2.13
+opensearch_image: opensearchproject/opensearch:2.4.0
+opensearch_dashboard_image: opensearchproject/opensearch-dashboards:2.4.0
+opensearch_logstash_image: opensearchproject/logstash-oss-with-opensearch-output-plugin:8.4.0

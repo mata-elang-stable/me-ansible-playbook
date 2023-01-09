@@ -1,0 +1,2 @@
+---
+__sensor_id: "{{ ansible_hostname }}"

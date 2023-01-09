@@ -1,0 +1,98 @@
+---
+- name: Define sensor_id if not set
+  ansible.builtin.set_fact:
+    sensor_id: "{{ __sensor_id }}"
+  when: sensor_id is not defined
+
+- name: Ensure Sensor directory exists
+  ansible.builtin.file:
+    path: "~/sensor"
+    state: directory
+    mode: 0755
+
+- name: Ensure Snort directory exists
+  ansible.builtin.file:
+    path: "~/sensor/snort"
+    state: directory
+    mode: 0755
+
+- name: Ensure Sensor docker image dir exists
+  ansible.builtin.file:
+    path: "~/sensor/docker_image"
+    state: directory
+    mode: 0755
+
+- name: Copy docker image Sensor related files to machine
+  ansible.builtin.copy:
+    src: "files/docker_images/{{ item }}"
+    dest: "~/sensor/docker_image/"
+    mode: 0755
+  with_items: "{{ sensor_image_filenames }}"
+
+- name: Copy Snort Rules files
+  ansible.builtin.copy:
+    src: "files/{{ sensor_snort_rule_filename }}"
+    dest: "~/sensor/snort/"
+    mode: 0755
+
+- name: Load Docker Images
+  community.docker.docker_image_load:
+    path: "~/sensor/docker_image/{{ item }}"
+    timeout: 120
+  with_items: "{{ sensor_image_filenames }}"
+
+- name: Cleanup Docker image tar
+  ansible.builtin.file:
+    path: "~/sensor/docker_image/{{ item }}"
+    state: absent
+  with_items: "{{ sensor_image_filenames }}"
+
+- name: Check if docker-compose.yaml file exists
+  ansible.builtin.stat:
+    path: ~/sensor/docker-compose.yml
+  register: sensor_compose_file
+
+- name: Stop the Services
+  community.docker.docker_compose:
+    project_src: ~/sensor
+    remove_orphans: true
+    remove_volumes: true
+    state: absent
+  when: sensor_compose_file.stat.exists
+
+- name: Configure docker-compose file
+  ansible.builtin.template:
+    src: ./sensor/docker-compose.yml.j2
+    dest: "~/sensor/docker-compose.yml"
+    mode: 0755
+
+- name: Configure Dockerfile file
+  ansible.builtin.template:
+    src: "./sensor/snort/Dockerfile.j2"
+    dest: "~/sensor/snort/Dockerfile"
+    mode: 0755
+
+- name: Configure snort.lua config file
+  ansible.builtin.template:
+    src: "./sensor/snort/snort.lua.j2"
+    dest: "~/sensor/snort/snort.lua"
+    mode: 0755
+
+- name: Configure local.rules config file
+  ansible.builtin.template:
+    src: "./sensor/snort/local.rules.j2"
+    dest: "~/sensor/snort/local.rules"
+    mode: 0755
+
+- name: Configure start shell config file
+  ansible.builtin.template:
+    src: ./sensor/snort/start.sh.j2
+    dest: "~/sensor/snort/start.sh"
+    mode: 0755
+
+- name: Run the Services
+  community.docker.docker_compose:
+    project_src: ~/sensor
+    state: present
+    build: true
+    remove_orphans: true

@@ -2,18 +2,23 @@
 ansible_ssh_user=username
 ansible_ssh_password=password
 ansible_become_password=password
+force=False
 
-[sensor]
-192.168.56.11 sensor_network_interface=enp0s8
-
-[hadoop]
-192.168.56.101
+[mosquitto]
+192.168.59.103
 
 [kafka]
-192.168.56.101
+192.168.59.103
+
+[hadoop]
+192.168.59.103
 
 [spark]
-192.168.56.101
+192.168.59.103
 
 [opensearch]
-192.168.56.101
+192.168.59.103
+
+[sensor]
+192.168.59.103 sensor_id=sensor1 sensor_network_interface=enp0s8 sensor_home_net=192.168.59.0/24
+192.168.60.103 sensor_network_interface=enp0s8 sensor_home_net=192.168.60.0/24

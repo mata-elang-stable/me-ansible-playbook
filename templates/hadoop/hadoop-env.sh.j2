@@ -1,0 +1,5 @@
+export HADOOP_OS_TYPE=${HADOOP_OS_TYPE:-$(uname -s)}
+export JAVA_HOME={{ ansible_env.HOME }}/jdk
+export HDFS_NAMENODE_USER={{ ansible_ssh_user }}
+export HDFS_DATANODE_USER={{ ansible_ssh_user }}
+export HDFS_SECONDARYNAMENODE_USER={{ ansible_ssh_user }}

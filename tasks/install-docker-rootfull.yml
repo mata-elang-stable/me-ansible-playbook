@@ -1,0 +1,148 @@
+# code: language=ansible
+---
+- name: Ensure group "docker" exists
+  become: true
+  ansible.builtin.group:
+    name: docker
+    state: present
+
+- name: Add Current SSH User to docker group
+  become: true
+  ansible.builtin.user:
+    name: "{{ ansible_ssh_user }}"
+    group: docker
+
+- name: Ensure Docker systemd directory exists
+  become: true
+  ansible.builtin.file:
+    path: "/etc/systemd/system/docker.service.d"
+    state: directory
+    mode: 0755
+
+- name: Ensure Docker containerd directory exists
+  become: true
+  ansible.builtin.file:
+    path: "/run/containerd"
+    state: directory
+    mode: 0755
+
+- name: Ensure Docker cli-plugins exists
+  become: true
+  ansible.builtin.file:
+    path: "/usr/local/lib/docker/cli-plugins"
+    state: directory
+    mode: 0755
+
+- name: Configure sysctl
+  become: true
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+  with_items:
+    - { key: "kernel.unprivileged_userns_clone", value: 1 }
+    - { key: "user.max_user_namespaces", value: 28633 }
+
+- name: "Configure Kernel: Set cgroup_enable to memory"
+  become: true
+  notify: Reboot host
+  ansible.builtin.lineinfile:
+    dest: /etc/default/grub
+    state: present
+    backrefs: true
+    regexp: '^(GRUB_CMDLINE_LINUX=(?!.* cgroup_enable)\"[^\"]*)(\".*)'
+    line: '\1 cgroup_enable=memory\2'
+
+- name: "Configure Kernel: Enable swapaccount"
+  become: true
+  notify: Reboot host
+  ansible.builtin.lineinfile:
+    dest: /etc/default/grub
+    state: present
+    backrefs: true
+    regexp: '^(GRUB_CMDLINE_LINUX=(?!.* swapaccount)\"[^\"]*)(\".*)'
+    line: '\1 swapaccount=1\2'
+
+- name: Copy Docker Binary Archive
+  ansible.builtin.copy:
+    src: "files/{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0755
+  with_items:
+    - { src: "{{ docker_archive_filename }}", dest: "/tmp/" }
+    - { src: "{{ docker_rootless_archive_filename }}", dest: "/tmp/" }
+
+- name: Copy required packages
+  ansible.builtin.copy:
+    src: "files/{{ item }}"
+    dest: "/tmp/"
+    mode: 0755
+  with_items:
+    - "{{ docker_required_deb_packages_filename }}"
+    - "{{ python3_required_libs_filename }}"
+
+- name: Install required packages using apt
+  become: true
+  ansible.builtin.apt:
+    deb: "/tmp/{{ item }}"
+    state: present
+  with_items: "{{ docker_required_deb_packages_filename }}"
+
+- name: Install Docker py using pip
+  become: true
+  ansible.builtin.pip:
+    executable: pip
+    state: present
+    name:
+      - file:///tmp/{{ item }}
+  with_items: "{{ python3_required_libs_filename }}"
+
+- name: Extract Docker Binary Archive
+  become: true
+  ansible.builtin.unarchive:
+    src: "/tmp/{{ item }}"
+    dest: "/usr/bin/"
+    copy: false
+    extra_opts: [--strip-components=1]
+  with_items:
+    - "{{ docker_archive_filename }}"
+    - "{{ docker_rootless_archive_filename }}"
+
+- name: Install Docker Compose plugin
+  become: true
+  ansible.builtin.copy:
+    src: "files/{{ docker_compose_plugin_archive_filename }}"
+    dest: "/usr/local/lib/docker/cli-plugins/docker-compose"
+    mode: 0755
+
+- name: Configure Docker systemd service
+  become: true
+  ansible.builtin.template:
+    src: ./docker/docker.service.j2
+    dest: "/etc/systemd/system/docker.service"
+    mode: 0755
+
+- name: Configure Docker systemd service
+  become: true
+  ansible.builtin.template:
+    src: ./docker/docker.socket.j2
+    dest: "/etc/systemd/system/docker.socket"
+    mode: 0755
+
+- name: Ensure docker service running and enabled, also issue daemon-reload to pick up config changes
+  become: true
+  ansible.builtin.systemd:
+    state: started
+    enabled: true
+    daemon_reload: true
+    name: docker
+
+- name: Cleanup temporary files
+  ansible.builtin.file:
+    path: "/tmp/{{ item }}"
+    state: absent
+  with_items:
+    - "{{ docker_archive_filename }}"
+    - "{{ docker_rootless_archive_filename }}"
+    - "{{ docker_required_deb_packages_filename }}"
+    - "{{ python3_required_libs_filename }}"

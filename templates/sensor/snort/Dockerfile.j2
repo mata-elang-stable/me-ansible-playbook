@@ -1,0 +1,19 @@
+FROM {{ sensor_snort_image }}
+
+COPY snort.lua /usr/local/etc/snort/snort.lua
+COPY local.rules /usr/local/etc/rules/local.rules
+
+COPY snort3-community-rules.tar.gz /tmp/snort3-community-rules.tar.gz
+
+WORKDIR /tmp/
+RUN tar -zxvf snort3-community-rules.tar.gz && \
+    cat /tmp/snort3-community-rules/snort3-community.rules | tee /usr/local/etc/rules/pulledpork.rules && \
+    cat /usr/local/etc/rules/local.rules | tee -a /usr/local/etc/rules/pulledpork.rules && \
+    rm -rf snort3-community-rules snort3-community-rules.tar.gz
+
+COPY start.sh /usr/local/bin/start-sensor.sh
+RUN chmod u+x /usr/local/bin/start-sensor.sh
+
+WORKDIR /
+
+CMD [ "/usr/local/bin/start-sensor.sh" ]

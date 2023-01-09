@@ -1,0 +1,99 @@
+version: '3.4'
+
+volumes:
+  zookeeper_data:
+  zookeeper_log:
+  kafka_data:
+
+services:
+  mqtt-source:
+    image: {{ kafka_mqtt_source }}
+    environment:
+      MQTT_HOST: {{ mosquitto_host }}
+      MQTT_PORT: {{ mosquitto_port }}
+      MQTT_USERNAME: {{ mosquitto_username }}
+      MQTT_PASSWORD: {{ mosquitto_password }}
+      MQTT_TOPIC: {{ mosquitto_topic }}
+      KAFKA_BOOSTRAP_SERVERS: kafka:9092
+      KAFKA_PRODUCE_TOPIC: {{ kafka_sensor_events_topic }}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 64M
+        reservations:
+          cpus: '0.25'
+          memory: 32M
+
+  zookeeper:
+    image: {{ zookeeper_image }}
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_log:/var/lib/zookeeper/log
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  kafka:
+    image: {{ kafka_image }}
+    depends_on:
+      - zookeeper
+    ports:
+      - target: {{ kafka_listen_port }}
+        published: {{ kafka_listen_port }}
+        protocol: tcp
+        mode: host
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://{{ kafka_listen_ip }}:{{ kafka_listen_port }}
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 1G
+
+  control-center:
+    image: {{ kafka_ui_image }}
+    container_name: control-center
+    depends_on:
+      - zookeeper
+      - kafka
+      - mqtt-source
+    ports:
+      - "9021:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: MataElangKafkaCluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 768M
+        reservations:
+          cpus: '0.25'
+          memory: 384M

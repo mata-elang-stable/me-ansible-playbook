@@ -27,6 +27,7 @@ url_list=(
     http://archive.ubuntu.com/ubuntu/pool/universe/w/wheel/python3-wheel_0.34.2-1_all.deb
     http://security.ubuntu.com/ubuntu/pool/universe/p/python-pip/python3-pip_20.0.2-5ubuntu1.5_all.deb
     https://snort.org/downloads/community/snort3-community-rules.tar.gz
+    https://github.com/mata-elang-stable/kaspacore-java/releases/download/20230105/kaspacore.jar
 )
 
 # Prepare Docker Images

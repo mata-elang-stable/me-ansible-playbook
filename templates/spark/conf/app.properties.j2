@@ -3,6 +3,7 @@ SPARK_CHECKPOINT_PATH={{ hadoop_home_url }}/kafka-checkpoint
 TIMEZONE=UTC
 
 KAFKA_BOOTSTRAP_SERVERS={{ kafka_listen_ip }}:{{ kafka_listen_port }}
+KAFKA_INPUT_STARTING_OFFSETS=earliest
 
 SENSOR_STREAM_INPUT_TOPIC={{ kafka_sensor_events_topic }}
 SENSOR_STREAM_OUTPUT_TOPIC={{ kafka_enriched_sensor_events_topic }}

@@ -89,7 +89,7 @@ kafka_image_filenames:
 
 sensor_image_filenames:
   - "mataelang_snort3-parser_1.1.tar"
-  - "mataelang_snort-base_3.1.47.0-alpine-3.tar"
+  - "mataelang_snort-base_3.1.47.0.tar"
 
 opensearch_image_filenames:
   - "opensearchproject_logstash-oss-with-opensearch-output-plugin_8.4.0.tar"

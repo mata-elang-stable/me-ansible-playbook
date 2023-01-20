@@ -78,6 +78,12 @@
     dest: "~/sensor/snort/snort.lua"
     mode: 0755
 
+- name: Configure pulledpork.conf file
+  ansible.builtin.template:
+    src: "./sensor/snort/pulledpork.conf.j2"
+    dest: "~/sensor/snort/pulledpork.conf"
+    mode: 0755
+
 - name: Configure local.rules config file
   ansible.builtin.template:
     src: "./sensor/snort/local.rules.j2"

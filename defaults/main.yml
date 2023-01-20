@@ -1,9 +1,18 @@
 ---
 # Global
 timezone: Asia/Jakarta
+offline_mode: true # always true, no impact
 
 # Sensor
-# You can set this sensor configuration for each sensor in inventory.
+## You can set this sensor configuration for each sensor in inventory.
+
+## Required if offline_mode is false
+## Snort Ruleset: 'community', 'registered', 'lightspd'
+snort_ruleset: 'community'
+snort_oinkcode: xxxxxxx
+## end offline_mode is false
+
+snort_version: '3.1.47.0'
 sensor_max_pcap_files: 5
 sensor_snort_rule_filename: snort3-community-rules.tar.gz
 snort_local_rules: {}
@@ -36,6 +45,8 @@ kafka_listen_ip: "{{ groups['kafka'][0] }}"
 kafka_listen_port: 9093
 kafka_sensor_events_topic: sensor_events
 kafka_enriched_sensor_events_topic: sensor_events_with_geoip
+kafka_log_retention_bytes: 536870912 # 512MB
+kafka_log_retention_ms: 86400000 # 1 day
 
 # hadoop
 hadoop_listen_ip: "{{ groups['hadoop'][0] }}"

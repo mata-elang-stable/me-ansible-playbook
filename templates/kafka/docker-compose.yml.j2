@@ -1,4 +1,4 @@
-version: '3.4'
+version: '3'
 
 volumes:
   zookeeper_data:
@@ -8,6 +8,7 @@ volumes:
 services:
   mqtt-source:
     image: {{ kafka_mqtt_source_image }}
+    container_name: mqtt-source
     environment:
       MQTT_HOST: {{ mosquitto_host }}
       MQTT_PORT: {{ mosquitto_port }}
@@ -63,6 +64,8 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_LOG_RETENTION_BYTES: {{ kafka_log_retention_bytes }}
+      KAFKA_LOG_RETENTION_MS: {{ kafka_log_retention_ms }}
     volumes:
       - kafka_data:/var/lib/kafka/data
     deploy:

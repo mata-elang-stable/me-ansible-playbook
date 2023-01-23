@@ -121,6 +121,17 @@ You can freely adjust the default variable in `defaults/main.yml`. You can use t
     ansible-playbook -i inventory site.yaml
     ```
 
+6. Download OpenSearch Dashboard template
+    You need to download this template file from any host where you want to access the dashboard, this file does not need to copy to the server or defense center host.
+    URL: https://raw.githubusercontent.com/mata-elang-stable/mataelang-docs/main/opensearch/mata-elang-template.ndjson\
+
+    ```bash
+    wget https://raw.githubusercontent.com/mata-elang-stable/mataelang-docs/main/opensearch/mata-elang-template.ndjson
+    ```
+
+7. Access the OpenSearch Dashboard
+    After the installation process is done, you can access the dashboard at http://defense-center-ip:5601.
+
 ## How to create Docker Image tar file
 1. Pull the image
 ```sh

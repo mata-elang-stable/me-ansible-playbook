@@ -2,58 +2,141 @@
 
 ## Prerequisite
 
-- [x] Install Python 3.8
-- [x] Install ansible
-- [x] Install sshpass
+- Python >= 3.8
+- Ansible
+- sshpass
 
-All Mata Elang components are already included inside `tasks` folder.
+All Mata Elang components are already included in the `tasks` folder.
+
+## Offline Installation
+You can use this Ansible Playbook to install Mata Elang in an offline way. But you need to get online first to prepare the required files.
+
+### Offline Requirements
+These requirements are only applied to host where you run the Ansible Playbook.
+ - Docker: [Install Docker in Ubuntu](https://docs.docker.com/engine/install/ubuntu/)
+ - Python >= 3.8
+ - Ansible
+ - sshpass
+ - wget (for running download.sh script)
+
+### Downloading Required Files for Offline Installation
+We already provide a script to download all required files in a single execution. This script needs a bash to run.
+1. Execute `download.sh`. This will download around 8.5GB.
+    ```bash
+    bash download.sh
+    ```
+2. Download GeoLite2-Citye.mmdb.
+    You need to download Maxmind Database from the website. Please refer to our [wiki here](https://github.com/mata-elang-stable/mataelang-platform/wiki/hadoop#install-geolite2).
+
+You can always download the required files manually and store them in the `files` directory.
 
 ## Usage
+1. Clone this repository.
+2. Download GeoLite2-City.mmdb from Maxmind. You can look at our [wiki](https://github.com/mata-elang-stable/mataelang-platform/wiki/hadoop#install-geolite2) how to get it.
+3. Edit the inventory
+Copy `inventory.example` file to `inventory`. This file defines the grouping for each hostname that is going to be installed by Ansible Playbook. You need to define the SSH user and password. If you have a different user for each IP and group, you can look at the example below.
 
-**1. Edit `inventory` file.**
-<p>copy the `inventory.example` file to `inventory`. This file define the grouping for each hostname that going to installed with ansible automation. Each group need to defined the username, password, and the root password for the SSH process in ansible</p>
+    - Example
+        #### Sensor host
+        ```
+        Username: ubuntu
+        Password: ubuntu
+        Network Interface 1: eth0 172.16.3.110
+        Network Interface 2: eth1 172.16.4.110
+        ```
+        
+        #### Defense Center host
+        ```
+        Username: ubuntu
+        Password: ubuntu
+        Network Interface 1: eth0 172.16.4.111
+        ```
+        
+        #### Configuration Result
 
-This is an example line for ansible inventory file:
+        ```conf
+        [all:vars]
+        ansible_ssh_user=ubuntu
+        ansible_ssh_password=ubuntu
+        ansible_become_password=ubuntu
+        force=False
+
+        [mosquitto]
+        172.16.4.111
+
+        [kafka]
+        172.16.4.111
+
+        [hadoop]
+        172.16.4.111
+
+        [spark]
+        172.16.4.111
+
+        [opensearch]
+        172.16.4.111
+
+        [sensor]
+        172.16.4.110 sensor_id=sensor1 sensor_network_interface=eth0 sensor_home_net=172.16.3.0/24
+        ```
+
+    - For example, if you have different Linux user for the sensor group
+
+        ```conf
+        [all:vars]
+        ansible_ssh_user=ubuntu
+        ansible_ssh_password=ubuntu
+        ansible_become_password=ubuntu
+        force=False
+
+        [mosquitto]
+        172.16.4.111
+
+        [kafka]
+        172.16.4.111
+
+        [hadoop]
+        172.16.4.111
+
+        [spark]
+        172.16.4.111
+
+        [opensearch]
+        172.16.4.111
+
+        [sensor]
+        172.16.4.110 sensor_id=sensor1 sensor_network_interface=eth0 sensor_home_net=172.16.3.0/24
+
+        [sensor:vars]
+        ansible_ssh_user=sensor1
+        ansible_ssh_password=ubuntu
+        ansible_become_password=ubuntu
+        ```
+        
+4. Edit default variable
+You can freely adjust the default variable in `defaults/main.yml`. You can use the default configuration.
+
+5. Run the Ansible Playbook
+    ```sh
+    ansible-playbook -i inventory site.yaml
+    ```
+
+## How to create Docker Image tar file
+1. Pull the image
+```sh
+docker pull imagename:imagetag
 ```
-[all:vars]
-ansible_ssh_user=username
-ansible_ssh_password=password
-ansible_become_password=password
 
-[mosquitto]
-192.168.59.103
-
-[kafka]
-192.168.59.103
-
-[hadoop]
-192.168.59.103
-
-[spark]
-192.168.59.103
-
-[opensearch]
-192.168.59.103
-
-[sensor]
-192.168.59.103 sensor_id=sensor1 sensor_network_interface=enp0s8
-192.168.59.104 sensor_network_interface=enp0s8
-```
-**2. Edit default variable**
-<p>Open `defaults` -> 'main.yml' file and edit necessary variable for each component that necessary. The current configuration for variables are default configuration.</p>
-
-**3. Start Ansible Process**
-<p>Open the terminal with this current project directory and start the ansible using this command:</p>
-
-```bash
-ansible-playbook -i inventory site.yaml
+2. Save the image to archive file
+```sh
+docker save -o imagename_imagetag.tar imagename:imagetag
 ```
 
-## Force reinstall (Data will be erased!)
+## How to force reinstall (Data will be erased!)
 
-You can do reinstall all components by adding `force=True` at `[all:vars]` section in inventory file.
+You can reinstall all components by adding the `force=True` at `[all:vars]` section in the inventory file.
 
-```
+```conf
 [all:vars]
 ansible_ssh_user=username
 ansible_ssh_password=password

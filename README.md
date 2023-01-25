@@ -3,7 +3,7 @@
 ## Prerequisite
 
 - Python >= 3.8
-- Ansible
+- Ansible 2.12
 - sshpass
 
 All Mata Elang components are already included in the `tasks` folder.
@@ -15,7 +15,7 @@ You can use this Ansible Playbook to install Mata Elang in an offline way. But y
 These requirements are only applied to host where you run the Ansible Playbook.
  - Docker: [Install Docker in Ubuntu](https://docs.docker.com/engine/install/ubuntu/)
  - Python >= 3.8
- - Ansible
+ - Ansible 2.12
  - sshpass
  - wget (for running download.sh script)
 

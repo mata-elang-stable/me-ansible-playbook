@@ -3,8 +3,8 @@
 # Define URL
 url_list=(
     https://corretto.aws/downloads/latest/amazon-corretto-11-x64-linux-jdk.tar.gz
-    https://download.docker.com/linux/static/stable/x86_64/docker-20.10.9.tgz
-    https://download.docker.com/linux/static/stable/x86_64/docker-rootless-extras-20.10.9.tgz
+    https://download.docker.com/linux/static/stable/x86_64/docker-20.10.12.tgz
+    https://download.docker.com/linux/static/stable/x86_64/docker-rootless-extras-20.10.12.tgz
     https://github.com/docker/compose/releases/download/v2.14.2/docker-compose-linux-x86_64
     https://dlcdn.apache.org/hadoop/common/hadoop-3.3.4/hadoop-3.3.4.tar.gz
     http://security.ubuntu.com/ubuntu/pool/universe/s/shadow/uidmap_4.8.1-1ubuntu5.20.04.4_amd64.deb

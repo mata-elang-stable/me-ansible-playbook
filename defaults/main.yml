@@ -59,8 +59,8 @@ kaspacore_jar_filename: kaspacore.jar
 
 # Archive
 # Docker static binary URL: https://download.docker.com/linux/static/stable/x86_64/
-docker_archive_filename: docker-20.10.9.tgz
-docker_rootless_archive_filename: docker-rootless-extras-20.10.9.tgz
+docker_archive_filename: docker-20.10.12.tgz
+docker_rootless_archive_filename: docker-rootless-extras-20.10.12.tgz
 # Docker compose plugin download URL: https://github.com/docker/compose/releases/download/v2.14.2/docker-compose-linux-x86_64
 docker_compose_plugin_archive_filename: docker-compose-linux-x86_64
 hadoop_archive_filename: hadoop-3.3.4.tar.gz

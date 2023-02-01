@@ -52,3 +52,36 @@
   ansible.builtin.user:
     name: "{{ ansible_ssh_user }}"
     group: docker
+
+- name: Copy required packages
+  ansible.builtin.copy:
+    src: "files/{{ item }}"
+    dest: "/tmp/"
+    mode: 0755
+  with_items:
+    - "{{ docker_required_deb_packages_filename }}"
+    - "{{ python3_required_libs_filename }}"
+
+- name: Install required packages using apt
+  become: true
+  ansible.builtin.apt:
+    deb: "/tmp/{{ item }}"
+    state: present
+  with_items: "{{ docker_required_deb_packages_filename }}"
+
+- name: Install Docker py using pip
+  become: true
+  ansible.builtin.pip:
+    executable: pip
+    state: present
+    name:
+      - file:///tmp/{{ item }}
+  with_items: "{{ python3_required_libs_filename }}"
+
+- name: Cleanup temporary files
+  ansible.builtin.file:
+    path: "/tmp/{{ item }}"
+    state: absent
+  with_items:
+    - "{{ docker_required_deb_packages_filename }}"
+    - "{{ python3_required_libs_filename }}"

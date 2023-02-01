@@ -28,12 +28,12 @@
       ansible.builtin.include_tasks:
         file: tasks/docker/install-docker-rootfull.yml
       when: not docker_command_exists.stat.exists and
-        ('docker-ce' not in ansible_facts.packages or 'docker' not in ansible_facts.packages)
+        ('docker-ce' not in ansible_facts.packages or 'docker' not in ansible_facts.packages) and offline_mode is true
 
-    # - name: Install Docker (using online repository)
-    #   ansible.builtin.include_tasks:
-    #     file: tasks/docker/install-repos.yml
-    #   when: offline_mode is false
+    - name: Install Docker (using online repository)
+      ansible.builtin.include_tasks:
+        file: tasks/docker/install-repos.yml
+      when: offline_mode is false
 
 - name: "Mata Elang: Install Mosquitto"
   hosts: mosquitto

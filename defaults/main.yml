@@ -47,6 +47,7 @@ kafka_sensor_events_topic: sensor_events
 kafka_enriched_sensor_events_topic: sensor_events_with_geoip
 kafka_log_retention_bytes: 536870912 # 512MB
 kafka_log_retention_ms: 86400000 # 1 day
+kafka_log_segment_bytes: 536870912 # 512MB
 
 # hadoop
 hadoop_listen_ip: "{{ groups['hadoop'][0] }}"

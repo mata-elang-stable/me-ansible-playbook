@@ -66,6 +66,7 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_LOG_RETENTION_BYTES: {{ kafka_log_retention_bytes }}
       KAFKA_LOG_RETENTION_MS: {{ kafka_log_retention_ms }}
+      KAFKA_LOG_SEGMENT_BYTES: {{ kafka_log_segment_bytes }}
     volumes:
       - kafka_data:/var/lib/kafka/data
     deploy:

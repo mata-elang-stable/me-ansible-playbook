@@ -7,7 +7,7 @@ url_list=(
     https://download.docker.com/linux/static/stable/x86_64/docker-rootless-extras-20.10.12.tgz
     https://github.com/docker/compose/releases/download/v2.14.2/docker-compose-linux-x86_64
     https://dlcdn.apache.org/hadoop/common/hadoop-3.3.4/hadoop-3.3.4.tar.gz
-    http://security.ubuntu.com/ubuntu/pool/universe/s/shadow/uidmap_4.8.1-1ubuntu5.20.04.4_amd64.deb
+    http://archive.ubuntu.com/ubuntu/pool/universe/s/shadow/uidmap_4.8.1-1ubuntu5.20.04.4_amd64.deb
     https://github.com/docker/docker-py/releases/download/6.0.1/docker-6.0.1-py3-none-any.whl
     https://files.pythonhosted.org/packages/8f/7b/42582927d281d7cb035609cd3a543ffac89b74f3f4ee8e1c50914bcb57eb/packaging-22.0-py3-none-any.whl
     https://github.com/urllib3/urllib3/releases/download/1.26.13/urllib3-1.26.13-py2.py3-none-any.whl
@@ -22,10 +22,10 @@ url_list=(
     https://files.pythonhosted.org/packages/8d/ee/e9ecce4c32204a6738e0a5d5883d3413794d7498fe8b06f44becc028d3ba/dockerpty-0.4.1.tar.gz
     https://files.pythonhosted.org/packages/71/6d/95777fd66507106d2f8f81d005255c237187951644f85a5bd0baeec8a88f/paramiko-2.12.0-py2.py3-none-any.whl
     https://files.pythonhosted.org/packages/aa/48/fd2b197a9741fa790ba0b88a9b10b5e88e62ff5cf3e1bc96d8354d7ce613/bcrypt-4.0.1-cp36-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-    http://security.ubuntu.com/ubuntu/pool/universe/p/python-pip/python-pip-whl_20.0.2-5ubuntu1.5_all.deb
-    http://security.ubuntu.com/ubuntu/pool/main/p/python3-stdlib-extensions/python3-distutils_3.8.10-0ubuntu1~20.04_all.deb
+    http://archive.ubuntu.com/ubuntu/pool/universe/p/python-pip/python-pip-whl_20.0.2-5ubuntu1.7_all.deb
+    http://archive.ubuntu.com/ubuntu/pool/main/p/python3-stdlib-extensions/python3-distutils_3.8.10-0ubuntu1~20.04_all.deb
     http://archive.ubuntu.com/ubuntu/pool/universe/w/wheel/python3-wheel_0.34.2-1_all.deb
-    http://security.ubuntu.com/ubuntu/pool/universe/p/python-pip/python3-pip_20.0.2-5ubuntu1.5_all.deb
+    http://archive.ubuntu.com/ubuntu/pool/universe/p/python-pip/python3-pip_20.0.2-5ubuntu1.7_all.deb
     https://snort.org/downloads/community/snort3-community-rules.tar.gz
     https://github.com/mata-elang-stable/kaspacore-java/releases/download/20230105/kaspacore.jar
     https://raw.githubusercontent.com/mata-elang-stable/mataelang-docs/main/opensearch/mata-elang-template.ndjson
@@ -52,7 +52,7 @@ do_download() {
         return
     fi
     echo "=> Downloading $filename"
-    wget -q --show-progress --progress=bar:force -O "files/$filename" "$1"
+    wget -q --show-progress --progress=bar:force -O "files/$filename" "$1" || (rm -f "files/$filename" && printf  "Download failed: " && wget --server-response --spider --quiet "$1" 2>&1 | awk 'NR==1{print}')
 }
 
 do_docker_save() {
@@ -61,7 +61,8 @@ do_docker_save() {
         return
     fi
     echo "=> Downloading $1"
-    docker pull -q "$1"
+    docker pull "$1"
+    echo "=> Saving to file $1"
     docker save -o "$tar_filename" "$1"
 }
 

@@ -70,10 +70,10 @@ mosquitto_image_filename: eclipse-mosquitto_2.0.15.tar
 spark_image_filename: mataelang_spark_3.3.1-scala2.13.tar
 
 docker_required_deb_packages_filename:
-  - python-pip-whl_20.0.2-5ubuntu1.5_all.deb
+  - python-pip-whl_20.0.2-5ubuntu1.7_all.deb
   - python3-distutils_3.8.10-0ubuntu1~20.04_all.deb
   - python3-wheel_0.34.2-1_all.deb
-  - python3-pip_20.0.2-5ubuntu1.5_all.deb
+  - python3-pip_20.0.2-5ubuntu1.7_all.deb
   - uidmap_4.8.1-1ubuntu5.20.04.4_amd64.deb
 
 python3_required_libs_filename:

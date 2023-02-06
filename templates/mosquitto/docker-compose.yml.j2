@@ -8,8 +8,8 @@ services:
   mosquitto:
     image: {{ mosquitto_image_name }}
     volumes:
-      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
-      - ./mosquitto_passwd:/mosquitto/config/password_file
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto_passwd:/mosquitto/config/password_file:ro
       - mosquitto_data:/mosquitto/data
     ports:
       - 1883:1883

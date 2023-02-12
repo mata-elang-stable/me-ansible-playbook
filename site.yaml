@@ -135,4 +135,3 @@
     - name: Include install-sensor.yml
       ansible.builtin.include_tasks:
         file: tasks/install-sensor.yml
-      when: not sensor_compose_file.stat.exists or (force is defined and force is true)

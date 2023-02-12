@@ -8,7 +8,9 @@ offline_mode: true # always true, no impact
 
 ## Required if offline_mode is false
 ## Snort Ruleset: 'community', 'registered', 'lightspd'
-snort_ruleset: 'community'
+snort_ruleset: community
+## Snort IPS Policies: connectivity, balanced, security, max-detect, none
+snort_rule_ips_policy: balanced
 snort_oinkcode: xxxxxxx
 ## end offline_mode is false
 

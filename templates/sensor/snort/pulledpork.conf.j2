@@ -43,7 +43,7 @@ snort_version = {{ snort_version }}
 # must be one of: connectivity, balanced, security, max-detect, none
 # default is connectivity. Will not work with community ruleset.
 # https://www.snort.org/faq/why-are-rules-commented-out-by-default
-ips_policy = balanced
+ips_policy = {{ snort_rule_ips_policy }}
 
 # Rule Output mode:
 # simple (just a single .rules file, with any rule that's not commented out enabled)
@@ -111,4 +111,4 @@ distro = debian-x64
 #temp_path = /tmp
 
 # Pulledpork3 configuration version variable: may be used in future
-CONFIGURATION_NUMBER = 3.0.0.3
+CONFIGURATION_NUMBER = 3.0.0.0

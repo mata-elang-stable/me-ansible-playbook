@@ -6,9 +6,19 @@ volumes:
 services:
   snort:
     build: 
-      context: snort/
-    restart: always
+      context: ./
+      ## Please uncomment if you'd prefer to use the locally downloaded rule instead of the downloaded version
+      {% if offline_mode %}
+      dockerfile: snort/offline.Dockerfile
+      args:
+        RULE_FILENAME: {{ sensor_snort_rule_filename }}
+      {% else %}
+      # dockerfile: snort/offline.Dockerfile
+      # args:
+      #  RULE_FILENAME: {{ sensor_snort_rule_filename }}
+      {% endif %}
     network_mode: host
+    restart: always
     environment:
       - NETWORK_INTERFACE={{ sensor_network_interface }}
     volumes:
@@ -22,6 +32,13 @@ services:
         reservations:
           cpus: '0.7'
           memory: 256M
+
+###########################
+#         Note            #
+###########################
+# String/text `<machine-id>` will be replaced with content from /etc/machine-id
+# String/text `<sensor-id>` will be replaced with content from SENSOR_ID env var
+#
 
   snort-parser:
     image: {{ me_sensor_snort_parser_image }}

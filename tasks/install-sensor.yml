@@ -16,6 +16,12 @@
     state: directory
     mode: 0755
 
+- name: Ensure Snort Rules directory exists
+  ansible.builtin.file:
+    path: "~/sensor/rules"
+    state: directory
+    mode: 0755
+
 - name: Ensure Sensor docker image dir exists
   ansible.builtin.file:
     path: "~/sensor/docker_image"
@@ -32,7 +38,7 @@
 - name: Copy Snort Rules files
   ansible.builtin.copy:
     src: "files/{{ sensor_snort_rule_filename }}"
-    dest: "~/sensor/snort/"
+    dest: "~/sensor/rules/"
     mode: 0755
 
 - name: Load Docker Images
@@ -58,7 +64,7 @@
     remove_orphans: true
     remove_volumes: true
     state: absent
-  when: sensor_compose_file.stat.exists
+  when: sensor_compose_file.stat.exists and (force is defined and force is true)
 
 - name: Configure docker-compose file
   ansible.builtin.template:
@@ -68,8 +74,14 @@
 
 - name: Configure Dockerfile file
   ansible.builtin.template:
-    src: "./sensor/snort/Dockerfile.j2"
-    dest: "~/sensor/snort/Dockerfile"
+    src: "./sensor/Dockerfile.j2"
+    dest: "~/sensor/Dockerfile"
+    mode: 0755
+
+- name: Configure offline Dockerfile file
+  ansible.builtin.template:
+    src: "./sensor/snort/offline.Dockerfile.j2"
+    dest: "~/sensor/snort/offline.Dockerfile"
     mode: 0755
 
 - name: Configure snort.lua config file

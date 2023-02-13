@@ -11,7 +11,7 @@ offline_mode: true # always true, no impact
 snort_ruleset: community
 ## Snort IPS Policies: connectivity, balanced, security, max-detect, none
 snort_rule_ips_policy: balanced
-snort_oinkcode: xxxxxxx
+snort_oinkcode: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ## end offline_mode is false
 
 snort_version: '3.1.47.0'

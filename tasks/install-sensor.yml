@@ -35,6 +35,12 @@
     mode: 0755
   with_items: "{{ sensor_image_filenames }}"
 
+- name: Copy custom pulledpork python script
+  ansible.builtin.copy:
+    src: "files/pulledpork.py"
+    dest: "~/sensor/snort/pulledpork.py"
+    mode: 0755
+
 - name: Copy Snort Rules files
   ansible.builtin.copy:
     src: "files/{{ sensor_snort_rule_filename }}"

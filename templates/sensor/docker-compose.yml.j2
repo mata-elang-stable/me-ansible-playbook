@@ -8,15 +8,15 @@ services:
     build: 
       context: ./
       ## Please uncomment if you'd prefer to use the locally downloaded rule instead of the downloaded version
-      {% if offline_mode %}
+{% if offline_mode %}
       dockerfile: snort/offline.Dockerfile
       args:
         RULE_FILENAME: {{ sensor_snort_rule_filename }}
-      {% else %}
+{% else %}
       # dockerfile: snort/offline.Dockerfile
       # args:
       #  RULE_FILENAME: {{ sensor_snort_rule_filename }}
-      {% endif %}
+{% endif %}
     network_mode: host
     restart: always
     environment:

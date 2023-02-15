@@ -1,7 +1,7 @@
 ---
 # Global
 timezone: Asia/Jakarta
-offline_mode: true # always true, no impact
+offline_mode: true
 
 # Sensor
 ## You can set this sensor configuration for each sensor in inventory.
@@ -13,6 +13,12 @@ snort_ruleset: community
 snort_rule_ips_policy: balanced
 snort_oinkcode: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ## end offline_mode is false
+
+# Download IP blocklist from internet. This option will disabled if offline_mode is true
+snort_ip_blocklist: true
+snort_et_blocklist: false
+# snort_blocklist_urls:
+#   - http://a.b.com/list.list
 
 snort_version: '3.1.47.0'
 sensor_max_pcap_files: 5

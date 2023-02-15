@@ -8,14 +8,21 @@ oinkcode = {{ snort_oinkcode }}
 
 
 # which blocklists to download
-snort_blocklist = true
-et_blocklist = true
+snort_blocklist = {{ 'true' if snort_ip_blocklist and not offline_mode else 'false' }}
+et_blocklist = {{ 'true' if snort_et_blocklist and not offline_mode else 'false' }}
+
+{% if not offline_mode and (snort_ip_blocklist or snort_et_blocklist) %}
 
 # additional blocklists to download from a URL, comma-separated
 #blocklist_urls = http://a.b.com/list.list
+{% if snort_blocklist_urls is defined and snort_blocklist_urls|length>0 %}
+blocklist_urls = {{ snort_blocklist_urls | join(',') }}
+{% endif %}
 
 # Where to write the blocklist file (single file containing all blocklists downloaded)
 blocklist_path = /usr/local/etc/lists/default.blocklist
+
+{% endif %}
 
 
 # PulledPork needs to know which version of Snort you are running in most instances.

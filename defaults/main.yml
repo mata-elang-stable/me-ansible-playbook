@@ -15,7 +15,7 @@ snort_oinkcode: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ## end offline_mode is false
 
 # Download IP blocklist from internet. This option will disabled if offline_mode is true
-snort_ip_blocklist: true
+snort_ip_blocklist: false
 snort_et_blocklist: false
 # snort_blocklist_urls:
 #   - http://a.b.com/list.list

@@ -28,7 +28,6 @@ url_list=(
     http://archive.ubuntu.com/ubuntu/pool/universe/p/python-pip/python3-pip_20.0.2-5ubuntu1.7_all.deb
     https://snort.org/downloads/community/snort3-community-rules.tar.gz
     https://github.com/mata-elang-stable/kaspacore-java/releases/download/20230213/kaspacore.jar
-    https://raw.githubusercontent.com/mata-elang-stable/sensor-snort/main/snort/pulledpork.py
     https://raw.githubusercontent.com/mata-elang-stable/mataelang-docs/main/opensearch/mata-elang-template.ndjson
 )
 
